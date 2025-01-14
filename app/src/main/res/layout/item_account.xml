@@ -1,0 +1,34 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@android:color/white"
+    android:elevation="2dp"
+    android:layout_marginBottom="8dp">
+
+    <TextView
+        android:id="@+id/tv_account_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Account Name"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tv_account_balance"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Balance: RM 0.00"
+        android:textSize="14sp"
+        android:textColor="@android:color/darker_gray"
+        android:layout_marginTop="4dp" />
+
+    <ImageView
+        android:id="@+id/iv_delete_account"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@android:drawable/ic_delete"
+        android:visibility="gone" /> <!-- Initially hidden, shown during swipe -->
+
+</LinearLayout>

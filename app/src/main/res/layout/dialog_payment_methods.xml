@@ -1,0 +1,38 @@
+<!-- dialog_payment_methods.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/et_payment_method"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Payment Method (e.g., Credit Card)"
+        android:padding="10dp"
+        android:inputType="text" />
+
+    <Button
+        android:id="@+id/btn_add_payment_method"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add Payment Method"
+        android:layout_marginTop="16dp"
+        android:padding="10dp" />
+
+    <TextView
+        android:id="@+id/tv_payment_methods"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Payment Methods:"
+        android:layout_marginTop="16dp"
+        android:textSize="16sp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_payment_methods"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp" />
+
+</LinearLayout>

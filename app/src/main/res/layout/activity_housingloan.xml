@@ -1,0 +1,220 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_color">
+
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@color/colorPrimary"
+        app:title="Housing Loan Calculator"
+        app:titleTextColor="@android:color/white"
+        app:titleCentered="true" />
+
+    <!-- Scrollable content within CardView -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar"
+        android:padding="16dp">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            android:layout_margin="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <!-- Title -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Housing Loan Calculator"
+                    android:textSize="24sp"
+                    android:textColor="@color/textPrimary"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:layout_gravity="center_horizontal"
+                    android:paddingBottom="16dp" />
+
+                <!-- Input fields and labels -->
+                <TextView
+                    android:id="@+id/tv_birth_year"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Birth Year:"
+                    android:textColor="@color/textPrimary"
+                    android:paddingBottom="8dp" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Loan Amount"
+                    android:textColor="@color/textPrimary" />
+
+                <EditText
+                    android:id="@+id/et_loan_amount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Loan Amount: RM" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Interest Rate"
+                    android:paddingTop="16dp"
+                    android:textColor="@color/textPrimary" />
+
+                <EditText
+                    android:id="@+id/et_interest_rate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="0%" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Term (length)"
+                    android:paddingTop="16dp"
+                    android:textColor="@color/textPrimary" />
+
+                <EditText
+                    android:id="@+id/et_term_months"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Months" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Loan Start Date"
+                    android:paddingTop="16dp"
+                    android:textColor="@color/textPrimary" />
+
+                <EditText
+                    android:id="@+id/et_start_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="YYYY-MM-DD"
+                    android:clickable="true"
+                    android:focusable="false" />
+
+                <!-- Calculate button -->
+                <Button
+                    android:id="@+id/btn_calculate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Calculate"
+                    android:layout_marginTop="16dp" />
+
+                <!-- Results section -->
+                <TextView
+                    android:id="@+id/tv_results_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Results"
+                    android:textSize="18sp"
+                    android:textColor="@color/textPrimary"
+                    android:paddingTop="24dp"
+                    android:paddingBottom="16dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_monthly_payment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Monthly Payment"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_interest_paid"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Interest Paid"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_total_payments"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Total Payments"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_last_payment_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Last Payment Date"
+                    android:visibility="gone" />
+
+                <!-- Specified month input -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Enter month to find interest paid:"
+                    android:paddingTop="16dp"
+                    android:textColor="@color/textPrimary" />
+
+                <EditText
+                    android:id="@+id/et_specified_month"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Month" />
+
+                <Button
+                    android:id="@+id/btn_calculate_interest"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Calculate Interest for Specified Month"
+                    android:layout_marginTop="16dp" />
+
+                <!-- Interest details -->
+                <LinearLayout
+                    android:id="@+id/ll_interest_details"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:padding="8dp">
+
+                    <TextView
+                        android:id="@+id/tv_interest_for_month"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Interest for Specified Month" />
+
+                    <TextView
+                        android:id="@+id/tv_principal_for_month"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Principal for Specified Month" />
+
+                    <TextView
+                        android:id="@+id/tv_remaining_balance_for_month"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Remaining Balance" />
+                </LinearLayout>
+
+                <!-- Amortization button -->
+                <Button
+                    android:id="@+id/btn_show_amortization"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Show Amortization Schedule"
+                    android:layout_marginTop="16dp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </ScrollView>
+</RelativeLayout>

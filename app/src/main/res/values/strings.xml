@@ -1,0 +1,63 @@
+<resources>
+    <string name="app_name">MyBudget</string>
+    <string name="logo_description">App Logo</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string-array name="time_periods">
+        <item>All Time</item>
+        <item>Weekly</item>
+        <item>Monthly</item>
+        <item>Yearly</item>
+    </string-array>
+    <string-array name="months">
+        <item>January</item>
+        <item>February</item>
+        <item>March</item>
+        <item>April</item>
+        <item>May</item>
+        <item>June</item>
+        <item>July</item>
+        <item>August</item>
+        <item>September</item>
+        <item>October</item>
+        <item>November</item>
+        <item>December</item>
+    </string-array>
+
+    <string-array name="years">
+        <item>2020</item>
+        <item>2021</item>
+        <item>2022</item>
+        <item>2023</item>
+        <item>2024</item>
+    </string-array>
+
+    <string name="chart_summary_text">Overall Spending vs Earnings</string>
+    <string name="default_web_client_id">1092116298145-tmihqnm5jl5n0basp8dblb5ujvfubmff.apps.googleusercontent.com</string>
+    <string name="profile_image_desc">Profile Picture</string>
+    <string name="error_invalid_email">Invalid email format.</string>
+    <string name="error_empty_username">Please enter your username or email.</string>
+    <string name="error_empty_password">Please enter your password.</string>
+    <string name="error_invalid_credentials">Invalid credentials. Please try again.</string>
+    <string name="error_user_not_found">No user found with the provided details.</string>
+    <string name="error_username_query_failed">Failed to query username. Please check your connection.</string>
+    <string name="error_google_sign_in">Google sign-in failed. Please try again later.</string>
+    <string name="error_firebase_auth">Authentication failed. Please try again.</string>
+    <string name="error_reset_email_failed">Failed to send password reset email. Please try again later.</string>
+    <string name="error_wrong_password">The password you entered is incorrect. Please try again.</string>
+
+    <string name="error_user_disabled">This account has been disabled. Please contact support for assistance.</string>
+
+
+        <string name="error_empty_fields">Please fill all fields</string>
+        <string name="error_password_too_short">Password must be at least 6 characters</string>
+        <string name="error_username_taken">Username already taken, please choose another</string>
+        <string name="error_checking_username">Error checking username: %1$s</string>
+        <string name="error_saving_profile">Error saving profile: %1$s</string>
+        <string name="error_updating_password">Failed to update password: %1$s</string>
+        <string name="success_profile_saved">Profile saved successfully</string>
+
+
+
+
+</resources>
