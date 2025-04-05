@@ -35,6 +35,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -43,6 +44,7 @@ import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -408,6 +410,8 @@ public class HomeFragment extends Fragment {
             String description = etDescription.getText().toString().trim();
             String category = spinnerCategory.getSelectedItem().toString();
             String paymentMethod = spinnerPaymentMethod.getSelectedItem().toString();
+            long dateInMillis = System.currentTimeMillis();
+            Timestamp timestamp = new Timestamp(new Date(dateInMillis));
             int selectedTypeId = rgType.getCheckedRadioButtonId();
 
             if (TextUtils.isEmpty(amountText) || TextUtils.isEmpty(description) || TextUtils.isEmpty(category) ||
@@ -434,7 +438,7 @@ public class HomeFragment extends Fragment {
             transactionData.put("category", category);
             transactionData.put("paymentMethod", paymentMethod);
             transactionData.put("type", type);
-            transactionData.put("date", selectedDate[0]); // Use the selected date
+            transactionData.put("date", timestamp); // Store as Timestamp
 
             // Save transaction to Firestore
             firestore.collection("users").document(userId).collection("transactions")

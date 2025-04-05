@@ -20,7 +20,7 @@ import java.util.Locale;
 
 public class Calculator extends AppCompatActivity {
 
-    private static final String TAG = "MenuActivity";
+    private static final String TAG = "CalculatorActivity";
     private TextView birthdateText;
     private Calendar calendar;
 
@@ -38,6 +38,7 @@ public class Calculator extends AppCompatActivity {
             Log.d(TAG, "Personal Loan button clicked");
             openPersonalLoan();
         });
+
         findViewById(R.id.housing_loan).setOnClickListener(v -> {
             Log.d(TAG, "Housing Loan button clicked");
             openHousingLoan();
@@ -73,7 +74,9 @@ public class Calculator extends AppCompatActivity {
                     calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
                     updateBirthdate();
                 },
-                calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
         );
         datePickerDialog.show();
     }
@@ -82,13 +85,11 @@ public class Calculator extends AppCompatActivity {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         String birthdate = dateFormat.format(calendar.getTime());
 
-        // Save birthdate to SharedPreferences
         SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("birthdate", birthdate);
         editor.apply();
 
-        // Update the TextView
         if (birthdateText != null) {
             birthdateText.setText(birthdate);
         }

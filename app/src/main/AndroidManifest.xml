@@ -18,6 +18,16 @@
         android:theme="@style/Theme.MyBudget"
         tools:targetApi="31">
 
+        <!-- About Activity -->
+        <activity
+            android:name=".AboutActivity"
+            android:exported="false" />
+
+        <!-- Feedback Activity -->
+        <activity
+            android:name=".FeedbackActivity"
+            android:exported="false" />
+
         <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
@@ -38,22 +48,16 @@
             android:name=".RegisterActivity"
             android:exported="false" />
 
-        <!-- Calculator Activity -->
+        <!-- Financial Calculators -->
         <activity
             android:name=".Calculator"
             android:exported="false" />
-
-        <!-- Amortization Schedule Activity -->
         <activity
             android:name=".AmortizationSchedule"
             android:exported="false" />
-
-        <!-- Housing Loan Activity -->
         <activity
             android:name=".housingloan"
             android:exported="false" />
-
-        <!-- Personal Loan Activity -->
         <activity
             android:name=".personalloan"
             android:exported="false" />
@@ -62,6 +66,16 @@
         <activity
             android:name=".SetupProfileActivity"
             android:exported="true" />
-    </application>
 
+        <!-- Budget Management -->
+        <activity
+            android:name=".BudgetActivity"
+            android:exported="false" />
+
+        <!-- ✅ Saving Goals Activity -->
+        <activity
+            android:name=".SavingGoalsActivity"
+            android:exported="false" />
+
+    </application>
 </manifest>

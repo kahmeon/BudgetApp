@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp"
-        android:background="@color/colorSecondory">
+        android:background="@color/colorSecondary">
 
         <TextView
             android:id="@+id/tv_net_assets"

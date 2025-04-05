@@ -3,49 +3,75 @@ package com.example.mybudget;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-
-import androidx.cardview.widget.CardView;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
+import androidx.fragment.app.Fragment;
 
 import com.google.firebase.auth.FirebaseAuth;
 
 public class SettingsFragment extends Fragment {
 
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
         // Open Calculator
         LinearLayout openCalculatorButton = view.findViewById(R.id.openCalculatorButton);
-        openCalculatorButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Start CalculatorActivity when the button is clicked
-                Intent intent = new Intent(getActivity(), Calculator.class);
-                startActivity(intent);
-            }
-        });
+        openCalculatorButton.setOnClickListener(v -> openCalculator());
+        LinearLayout openBudgetButton = view.findViewById(R.id.openBudgetButton);
+        openBudgetButton.setOnClickListener(v->openBudget());
+        LinearLayout openFeedbackButton = view.findViewById(R.id.openFeedbackButton);
+        openFeedbackButton.setOnClickListener(v->openFeedback());
+        LinearLayout openAboutButton = view.findViewById(R.id.openAboutButton);
+        openAboutButton.setOnClickListener(v -> openAbout());
+        LinearLayout openSavingGoalsButton = view.findViewById(R.id.openSavingGoalsButton);
+        openSavingGoalsButton.setOnClickListener(v -> openSavingGoals());
+
+
 
         // Logout Button
         CardView logoutButton = view.findViewById(R.id.logout);
-        logoutButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                logout();
-            }
-        });
+        logoutButton.setOnClickListener(v -> logout());
 
         return view;
     }
+
+    private void openCalculator() {
+        Intent intent = new Intent(getActivity(), Calculator.class);
+        startActivity(intent);
+    }
+
+    private void openBudget(){
+        Intent intent = new Intent(getActivity(), BudgetActivity.class);
+        startActivity(intent);
+    }
+
+    private void openSavingGoals() {
+        Intent intent = new Intent(getActivity(), SavingGoalsActivity.class);
+        startActivity(intent);
+    }
+
+
+    private void openFeedback(){
+        Intent intent = new Intent(getActivity(), FeedbackActivity.class);
+        startActivity(intent);
+    }
+
+    private void openAbout(){
+        Intent intent = new Intent(getActivity(), AboutActivity.class);
+        startActivity(intent);
+    }
+
     private void logout() {
-        // Sign out from Firebase Auth
-        FirebaseAuth.getInstance().signOut();
+        FirebaseAuth.getInstance().signOut(); // Sign out from Firebase
 
         // Update SharedPreferences to indicate the user is logged out
         SharedPreferences prefs = requireActivity().getSharedPreferences("loginPrefs", requireActivity().MODE_PRIVATE);
@@ -60,7 +86,8 @@ public class SettingsFragment extends Fragment {
 
         // Close MainActivity to prevent back navigation
         requireActivity().finishAffinity();
+
+        // Show logout confirmation
+        Toast.makeText(getContext(), "Logged out successfully", Toast.LENGTH_SHORT).show();
     }
-
-
 }

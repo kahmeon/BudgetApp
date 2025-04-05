@@ -34,6 +34,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -225,6 +226,19 @@ public class TransactionsFragment extends Fragment {
                         if (transaction != null) {
                             transaction.setId(document.getId());
                             Log.d("Firestore Debug", "Transaction Loaded: ID=" + document.getId());
+
+                            // 🔥 Fix: Convert `date` safely
+                            Object dateObj = document.get("date");
+                            long date;
+                            if (dateObj instanceof Timestamp) {
+                                date = ((Timestamp) dateObj).toDate().getTime(); // ✅ Convert `Timestamp` to milliseconds
+                            } else if (dateObj instanceof Long) {
+                                date = (Long) dateObj; // Already stored as `long`
+                            } else {
+                                date = 0; // Default value if null
+                            }
+
+                            transaction.setDate(date); // ✅ Set corrected `date`
                             transactionsList.add(transaction);
 
                             if ("Income".equals(transaction.getType())) {
@@ -253,6 +267,7 @@ public class TransactionsFragment extends Fragment {
                     Log.d("TransactionsFragment", "Total Income: " + totalIncome + ", Total Expense: " + totalExpense);
                 })
                 .addOnFailureListener(e -> Log.e("TransactionsFragment", "Error loading transactions", e));
+
     }
 
 
@@ -331,8 +346,6 @@ public class TransactionsFragment extends Fragment {
     }
 
 
-
-
     private void showAddTransactionDialog() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_add_transaction, null);
         AlertDialog dialog = new AlertDialog.Builder(getContext())
@@ -383,6 +396,8 @@ public class TransactionsFragment extends Fragment {
         setCategoryOptions(spinnerCategory, true);
 
         btnAddTransaction.setOnClickListener(v -> {
+            Log.d("AddTransaction", "Add Transaction button clicked"); // Debugging log
+
             String amountText = etAmount.getText().toString().trim();
             String description = etDescription.getText().toString().trim();
             String category = spinnerCategory.getSelectedItem().toString();
@@ -391,6 +406,7 @@ public class TransactionsFragment extends Fragment {
 
             if (TextUtils.isEmpty(amountText) || TextUtils.isEmpty(description) || TextUtils.isEmpty(category) ||
                     selectedTypeId == -1 || TextUtils.isEmpty(paymentMethod)) {
+                Log.e("AddTransaction", "Validation failed: Missing fields");
                 Toast.makeText(getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -400,33 +416,45 @@ public class TransactionsFragment extends Fragment {
 
             FirebaseUser currentUser = auth.getCurrentUser();
             if (currentUser == null) {
+                Log.e("AddTransaction", "User not logged in");
                 Toast.makeText(getContext(), "User not logged in", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             String userId = currentUser.getUid();
+            Log.d("AddTransaction", "User ID: " + userId);
 
-            // Prepare transaction data with the selected date
+            // 🔥 Convert `long` to Firestore `Timestamp`
+            Timestamp timestamp = new Timestamp(selectedDate[0] / 1000, 0);
+            Log.d("AddTransaction", "Selected Date Timestamp: " + timestamp.toDate());
+
+            // Prepare transaction data
             Map<String, Object> transactionData = new HashMap<>();
             transactionData.put("amount", amount);
             transactionData.put("description", description);
             transactionData.put("category", category);
             transactionData.put("paymentMethod", paymentMethod);
             transactionData.put("type", type);
-            transactionData.put("date", selectedDate[0]); // Use the selected date
+            transactionData.put("date", timestamp); // ✅ Store as Firestore `Timestamp`
+
+            Log.d("AddTransaction", "Transaction Data: " + transactionData);
 
             // Save transaction to Firestore
             firestore.collection("users").document(userId).collection("transactions")
                     .add(transactionData)
                     .addOnSuccessListener(documentReference -> {
+                        Log.d("AddTransaction", "Transaction added successfully: " + documentReference.getId());
                         Toast.makeText(getContext(), "Transaction added", Toast.LENGTH_SHORT).show();
                         dialog.dismiss();
                         loadUserTransactions();
                     })
-                    .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to add transaction", Toast.LENGTH_SHORT).show());
+                    .addOnFailureListener(e -> {
+                        Log.e("AddTransaction", "Failed to add transaction", e);
+                        Toast.makeText(getContext(), "Failed to add transaction", Toast.LENGTH_SHORT).show();
+                    });
         });
 
-        dialog.show();
+
     }
 
 

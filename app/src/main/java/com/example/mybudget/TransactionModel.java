@@ -2,6 +2,8 @@ package com.example.mybudget;
 
 import android.os.Parcelable;
 
+import com.google.firebase.Timestamp;
+
 /**
  * Model class for representing a transaction in the budget app.
  */
@@ -93,9 +95,14 @@ public class TransactionModel {
         return date;
     }
 
-    public void setDate(long date) {
-        this.date = date;
+    public void setDate(Object date) {
+        if (date instanceof Timestamp) {
+            this.date = ((Timestamp) date).toDate().getTime();
+        } else if (date instanceof Long) {
+            this.date = (Long) date;
+        }
     }
+
 
     public String getImageUrl() {
         return imageUrl;

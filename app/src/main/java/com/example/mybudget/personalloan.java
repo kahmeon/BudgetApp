@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -61,7 +62,12 @@ public class personalloan extends AppCompatActivity {
 
         // Display birthdate
         tvBirthYear.setText("Birthdate: " + birthdate);
+
+        ImageButton infoButton = findViewById(R.id.btn_info);
+        infoButton.setOnClickListener(v -> showInfoDialog());
+
     }
+
 
     private void initializeViews() {
         etLoanAmount = findViewById(R.id.et_loan_amount);
@@ -369,4 +375,52 @@ public class personalloan extends AppCompatActivity {
         tvLastPaymentDate.setVisibility(View.GONE);
         tvInterestForMonth.setVisibility(View.GONE);
     }
+
+    private void showInfoDialog() {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Personal Loan Calculation Guide")
+                .setMessage(
+                        "This calculator helps you evaluate personal loan payments with interest.\n\n" +
+
+                                "\u270D\ufe0f **Monthly Repayment Formula**\n" +
+                                "P = [L × (1 + r × n)] ÷ n\n\n" +
+                                "Where:\n" +
+                                "• L = Loan amount\n" +
+                                "• r = Monthly interest rate (annual ÷ 12 ÷ 100)\n" +
+                                "• n = Total months\n" +
+                                "• P = Monthly payment\n\n" +
+
+                                "\uD83D\uDCB8 **Interest Calculation**\n" +
+                                "Total Interest = (Monthly Payment × Total Months) – Loan Amount\n\n" +
+
+                                "\uD83D\uDCB0 **Total Repayment**\n" +
+                                "= Monthly Payment × Total Months\n\n" +
+
+                                "\uD83D\uDCC5 **Last Payment Date**\n" +
+                                "= Start Date + Loan Term (in months)\n\n" +
+
+                                "\uDCCB **Specified Month Calculation**\n" +
+                                "For any chosen month:\n" +
+                                "• Interest = Remaining × Monthly Rate\n" +
+                                "• Principal = Payment – Interest\n" +
+                                "• New Balance = Previous – Principal\n\n" +
+
+                                "\uD83D\uDCCA **Amortization Schedule**\n" +
+                                "Shows monthly:\n" +
+                                "• Month No.\n" +
+                                "• Beginning Balance\n" +
+                                "• Interest Paid\n" +
+                                "• Principal Paid\n" +
+                                "• Remaining Balance\n\n" +
+
+                                "\uD83D\uDCA1 **Tips**\n" +
+                                "• Max tenure: Up to 35 years or age 60, whichever is earlier\n" +
+                                "• Ensure correct inputs for accurate results\n" +
+                                "• Use amortization schedule to track and plan"
+                )
+                .setPositiveButton("OK", null)
+                .show();
+    }
+
+
 }

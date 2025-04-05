@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Goal Title -->
+        <TextView
+            android:id="@+id/goal_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Buy a Laptop"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <!-- Target & Saved -->
+        <TextView
+            android:id="@+id/goal_target"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Target: RM 3000"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/goal_saved"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Saved: RM 1500"
+            android:textSize="14sp"
+            android:layout_marginTop="2dp" />
+
+        <!-- Progress Bar -->
+        <ProgressBar
+            android:id="@+id/goal_progress_bar"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:max="100"
+            android:progress="50"
+            android:progressTint="@color/colorPrimary" />
+
+        <!-- Progress Percentage -->
+        <TextView
+            android:id="@+id/goal_progress_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="50%"
+            android:textAlignment="textEnd"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:layout_marginTop="2dp" />
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/btn_update_goal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Update"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@color/colorPrimary"
+                android:layout_marginEnd="8dp"/>
+
+            <Button
+                android:id="@+id/btn_delete_goal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delete"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@android:color/holo_red_dark"/>
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

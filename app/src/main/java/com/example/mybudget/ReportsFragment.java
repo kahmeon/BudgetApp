@@ -63,7 +63,7 @@ public class ReportsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_reports, container, false);
 
         // Initialize UI elements
-        spinnerTimePeriod = view.findViewById(R.id.spinner_time_period);
+
         tabExpense = view.findViewById(R.id.tab_expense);
         tabRevenue = view.findViewById(R.id.tab_revenue);
         tabExpensesRevenue=view.findViewById(R.id.tab_expenses_revenue);
@@ -88,7 +88,7 @@ public class ReportsFragment extends Fragment {
 
         // Set up tabs and spinner listeners
         setupTabListeners();
-        setupSpinnerListener();
+
 
         // Load initial data for "Expense" tab
         fetchTransactions();
@@ -136,41 +136,7 @@ public class ReportsFragment extends Fragment {
         });
     }
 
-    private void setupSpinnerListener() {
-        spinnerTimePeriod.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedPeriod = parent.getItemAtPosition(position).toString();
 
-                // Show or hide the date selection layout
-                dateSelectionLayout.setVisibility(View.VISIBLE);
-
-                if (selectedPeriod.equals("Weekly")) {
-                    spinnerMonth.setVisibility(View.GONE);
-                    spinnerYear.setVisibility(View.GONE);
-                    textViewSelectDate.setVisibility(View.VISIBLE); // Show date picker
-                    setupDateRangePicker();
-                } else if (selectedPeriod.equals("Monthly")) {
-                    spinnerMonth.setVisibility(View.VISIBLE);
-                    spinnerYear.setVisibility(View.VISIBLE);
-                    textViewSelectDate.setVisibility(View.GONE);
-
-                } else if (selectedPeriod.equals("Yearly")) {
-                    spinnerMonth.setVisibility(View.GONE);
-                    spinnerYear.setVisibility(View.VISIBLE);
-                    textViewSelectDate.setVisibility(View.GONE);
-
-                } else {
-                    dateSelectionLayout.setVisibility(View.GONE); // Hide for "All Time"
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                // Do nothing
-            }
-        });
-    }
 
     private long getStartDate(String timePeriod) {
         long currentTime = System.currentTimeMillis();

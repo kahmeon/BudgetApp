@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:background="@color/background_color">
 
-    <!-- Toolbar with Adjusted Icon Size and Title Centered -->
+    <!-- Toolbar with Info Icon -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -12,22 +12,24 @@
         android:background="@color/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         android:paddingStart="16dp"
-        android:paddingEnd="16dp">
+        android:paddingEnd="16dp"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:title="Personal Loan Calculator"
+        app:titleTextColor="@android:color/white">
 
-
-
-        <!-- Title Text Centered -->
-        <TextView
+        <!-- Info Icon Button -->
+        <ImageButton
+            android:id="@+id/btn_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Personal Loan Calculator"
-            android:textColor="@android:color/white"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_gravity="center"
-            android:layout_centerInParent="true" />
+            android:layout_gravity="end"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Info"
+            android:src="@drawable/ic_info"
+            app:tint="@android:color/white" />
     </androidx.appcompat.widget.Toolbar>
 
+    <!-- Scrollable Content -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -43,7 +45,6 @@
             android:background="@android:color/white"
             android:elevation="4dp"
             android:layout_margin="16dp"
-            android:backgroundTintMode="src_in"
             android:backgroundTint="#FFFFFF">
 
             <TextView
@@ -63,6 +64,7 @@
                 android:textColor="@android:color/black"
                 android:paddingBottom="16dp" />
 
+            <!-- Input Fields -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -109,26 +111,16 @@
                 android:paddingTop="16dp"
                 android:textColor="@android:color/black" />
 
-            <LinearLayout
+            <EditText
+                android:id="@+id/et_term_months"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:weightSum="1">
-
-                <EditText
-                    android:id="@+id/et_term_months"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@drawable/rounded_edittext"
-                    android:hint="Months"
-                    android:textColor="@android:color/black"
-                    android:inputType="number"
-                    android:padding="10dp"
-                    android:focusable="true"
-                    android:focusableInTouchMode="true"
-                    android:textCursorDrawable="@drawable/cursor_color" />
-            </LinearLayout>
+                android:background="@drawable/rounded_edittext"
+                android:hint="Months"
+                android:textColor="@android:color/black"
+                android:inputType="number"
+                android:padding="10dp"
+                android:textCursorDrawable="@drawable/cursor_color" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -145,18 +137,20 @@
                 android:hint="YYYY-MM-DD"
                 android:textColor="@android:color/black"
                 android:padding="10dp"
-                android:focusableInTouchMode="true"
-                android:textCursorDrawable="@drawable/cursor_color"
+                android:focusable="false"
                 android:clickable="true"
-                android:focusable="false" />
+                android:textCursorDrawable="@drawable/cursor_color" />
 
+            <!-- Buttons -->
             <Button
                 android:id="@+id/btn_calculate"
-                style="@style/CustomButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Calculate" />
+                android:text="Calculate"
+                android:backgroundTint="@color/colorPrimary"
+                android:textColor="@android:color/white" />
 
+            <!-- Results -->
             <TextView
                 android:id="@+id/tv_results_title"
                 android:layout_width="wrap_content"
@@ -172,42 +166,39 @@
                 android:id="@+id/tv_monthly_payment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Monthly Payment"
+                android:visibility="gone"
                 android:textColor="@android:color/black"
                 android:padding="8dp"
-                android:background="@drawable/rounded_edittext"
-                android:visibility="gone" />
+                android:background="@drawable/rounded_edittext" />
 
             <TextView
                 android:id="@+id/tv_interest_paid"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Interest Paid"
+                android:visibility="gone"
                 android:textColor="@android:color/black"
                 android:padding="8dp"
-                android:background="@drawable/rounded_edittext"
-                android:visibility="gone" />
+                android:background="@drawable/rounded_edittext" />
 
             <TextView
                 android:id="@+id/tv_total_payments"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Total Payments"
+                android:visibility="gone"
                 android:textColor="@android:color/black"
                 android:padding="8dp"
-                android:background="@drawable/rounded_edittext"
-                android:visibility="gone" />
+                android:background="@drawable/rounded_edittext" />
 
             <TextView
                 android:id="@+id/tv_last_payment_date"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Last Payment Date"
+                android:visibility="gone"
                 android:textColor="@android:color/black"
                 android:padding="8dp"
-                android:background="@drawable/rounded_edittext"
-                android:visibility="gone" />
+                android:background="@drawable/rounded_edittext" />
 
+            <!-- Month Input -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -226,16 +217,15 @@
                 android:inputType="number"
                 android:padding="10dp"
                 android:layout_marginTop="10dp"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
                 android:textCursorDrawable="@drawable/cursor_color" />
 
             <Button
                 android:id="@+id/btn_calculate_interest"
-                style="@style/CustomButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Calculate Interest for Specified Month" />
+                android:text="Calculate Interest for Specified Month"
+                android:backgroundTint="@color/colorPrimary"
+                android:textColor="@android:color/white" />
 
             <LinearLayout
                 android:id="@+id/ll_interest_details"
@@ -250,7 +240,6 @@
                     android:id="@+id/tv_interest_for_month"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Interest for Specified Month"
                     android:textColor="@android:color/black"
                     android:padding="8dp" />
 
@@ -258,7 +247,6 @@
                     android:id="@+id/tv_principal_for_month"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Principal for Specified Month"
                     android:textColor="@android:color/black"
                     android:padding="8dp" />
 
@@ -266,17 +254,17 @@
                     android:id="@+id/tv_remaining_balance_for_month"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Remaining Balance"
                     android:textColor="@android:color/black"
                     android:padding="8dp" />
             </LinearLayout>
 
             <Button
                 android:id="@+id/btn_show_amortization"
-                style="@style/CustomButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Show Amortization Schedule" />
+                android:text="Show Amortization Schedule"
+                android:backgroundTint="@color/colorPrimary"
+                android:textColor="@android:color/white" />
         </LinearLayout>
     </ScrollView>
 </RelativeLayout>

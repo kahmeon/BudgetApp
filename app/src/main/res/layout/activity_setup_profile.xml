@@ -100,7 +100,7 @@
                 android:layout_marginTop="24dp"
                 android:text="Save Profile"
                 android:textSize="16sp"
-                android:backgroundTint="@color/colorSecondory"
+                android:backgroundTint="@color/colorSecondary"
                 android:textColor="@android:color/white"
                 android:importantForAccessibility="yes"
                 app:cornerRadius="8dp"

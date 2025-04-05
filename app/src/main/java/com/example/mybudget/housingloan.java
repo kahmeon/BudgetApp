@@ -1,7 +1,10 @@
 package com.example.mybudget;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,13 +12,15 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -42,12 +47,17 @@ public class housingloan extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_housingloan);
 
-        // Retrieve birthdate from SharedPreferences and extract the year
         SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         String birthdate = sharedPreferences.getString("birthdate", "");
+
+        if (birthdate.isEmpty() || !birthdate.contains("-")) {
+            Toast.makeText(this, "Please set your birthdate in profile first", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+
         birthYear = Integer.parseInt(birthdate.split("-")[0]);
 
-        // Set up the toolbar with back button
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -60,7 +70,6 @@ public class housingloan extends AppCompatActivity {
         setupDatePicker();
         setupListeners();
 
-        // Display birthdate
         tvBirthYear.setText("Birthdate: " + birthdate);
     }
 
@@ -81,10 +90,8 @@ public class housingloan extends AppCompatActivity {
         tvLastPaymentDate = findViewById(R.id.tv_last_payment_date);
         tvBirthYear = findViewById(R.id.tv_birth_year);
 
-        // Initialize calendar
         calendar = Calendar.getInstance();
 
-        // Add TextWatcher to etLoanAmount and etInterestRate
         addCurrencyTextWatcher(etLoanAmount, "RM ");
         addPercentageTextWatcher(etInterestRate);
     }
@@ -96,8 +103,7 @@ public class housingloan extends AppCompatActivity {
                 calendar.set(Calendar.MONTH, monthOfYear);
                 calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
                 updateLabel();
-            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.
-                    get(Calendar.DAY_OF_MONTH)).show();
+            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
         });
     }
 
@@ -111,24 +117,22 @@ public class housingloan extends AppCompatActivity {
         editText.addTextChangedListener(new TextWatcher() {
             private boolean isEditing = false;
 
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
-
-            @Override
-            public void afterTextChanged(Editable s) {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(Editable s) {
                 if (isEditing) return;
                 isEditing = true;
 
-                String input = s.toString().replace(prefix, "").
-                        replaceAll(",", "");
+                String input = s.toString().replace(prefix, "").replaceAll(",", "");
                 if (!input.isEmpty()) {
-                    double parsed = Double.parseDouble(input);
-                    String formatted = NumberFormat.getNumberInstance(Locale.US).format(parsed);
-                    editText.setText(prefix + formatted);
-                    editText.setSelection(editText.getText().length());
+                    try {
+                        double parsed = Double.parseDouble(input);
+                        String formatted = NumberFormat.getNumberInstance(Locale.US).format(parsed);
+                        editText.setText(prefix + formatted);
+                        editText.setSelection(editText.getText().length());
+                    } catch (Exception e) {
+                        // Ignore
+                    }
                 }
 
                 isEditing = false;
@@ -140,14 +144,9 @@ public class housingloan extends AppCompatActivity {
         editText.addTextChangedListener(new TextWatcher() {
             private boolean isEditing = false;
 
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
-
-            @Override
-            public void afterTextChanged(Editable s) {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(Editable s) {
                 if (isEditing) return;
                 isEditing = true;
 
@@ -163,74 +162,51 @@ public class housingloan extends AppCompatActivity {
     }
 
     private void updateLabel() {
-        String myFormat = "yyyy-MM-dd"; // In which you need put here
-        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         etStartDate.setText(sdf.format(calendar.getTime()));
     }
 
     private void calculateHousingLoan() {
-        // Retrieve and validate input values
-        String loanAmountStr = etLoanAmount.getText().toString().replace
-                ("RM ", "").replaceAll(",", "");
-        if (loanAmountStr.isEmpty()) {
-            showError("Please enter a valid loan amount");
-            return;
-        }
-        loanAmount = Double.parseDouble(loanAmountStr);
-
-        String interestRateStr = etInterestRate.getText().toString().
-                replace("%", "");
-        if (interestRateStr.isEmpty()) {
-            showError("Please enter a valid interest rate");
-            return;
-        }
-        double interestRate = Double.parseDouble(interestRateStr);
-
+        String loanAmountStr = etLoanAmount.getText().toString().replace("RM ", "").replaceAll(",", "");
+        String interestRateStr = etInterestRate.getText().toString().replace("%", "");
         String termMonthsStr = etTermMonths.getText().toString().trim();
-        if (termMonthsStr.isEmpty()) {
-            showError("Please enter a valid term in months");
-            return;
-        }
-        totalMonths = Integer.parseInt(termMonthsStr);
-
         String startDateStr = etStartDate.getText().toString().trim();
-        if (startDateStr.isEmpty()) {
-            showError("Please enter a valid start date");
+
+        if (loanAmountStr.isEmpty() || interestRateStr.isEmpty() || termMonthsStr.isEmpty() || startDateStr.isEmpty()) {
+            showError("Please fill all fields");
             return;
         }
 
-        // Calculate the maximum allowed loan tenure
-        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-        int userAge = currentYear - birthYear;
-        int maxLoanTenureYears = Math.min(35, 70 - userAge);
-        int maxLoanTenureMonths = maxLoanTenureYears * 12;
-
-        // Validate loan tenure
-        if (totalMonths > maxLoanTenureMonths || totalMonths < 1) {
-            Toast.makeText(this, "Loan tenure exceeds maximum " +
-                    "allowed", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-
-        // Calculate monthly repayment using the formula: P = [r*P* (1+r)^N] / [(1+r)^N – 1]
-        monthlyInterestRate = interestRate / 12 / 100;
-        monthlyRepayment = (loanAmount * monthlyInterestRate *
-                Math.pow(1 + monthlyInterestRate, totalMonths)) /
-                (Math.pow(1 + monthlyInterestRate, totalMonths) - 1);
-        double totalRepayment = monthlyRepayment * totalMonths;
-        double interestPaid = totalRepayment - loanAmount;
-
-        // Calculate the last payment date
         try {
+            loanAmount = Double.parseDouble(loanAmountStr);
+            double interestRate = Double.parseDouble(interestRateStr);
+            totalMonths = Integer.parseInt(termMonthsStr);
+
+            int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+            int userAge = currentYear - birthYear;
+            int maxLoanTenureYears = Math.min(35, 70 - userAge);
+            int maxLoanTenureMonths = maxLoanTenureYears * 12;
+
+            if (totalMonths > maxLoanTenureMonths || totalMonths < 1) {
+                Toast.makeText(this, "Loan tenure exceeds maximum allowed", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            monthlyInterestRate = interestRate / 12 / 100;
+            monthlyRepayment = (loanAmount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, totalMonths)) /
+                    (Math.pow(1 + monthlyInterestRate, totalMonths) - 1);
+
+            double totalRepayment = monthlyRepayment * totalMonths;
+            double interestPaid = totalRepayment - loanAmount;
+
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
             Date startDate = sdf.parse(startDateStr);
             calendar.setTime(startDate);
             calendar.add(Calendar.MONTH, totalMonths);
-            Date lastPaymentDate = calendar.getTime();
-            String lastPaymentDateString = sdf.format(lastPaymentDate);
+            String lastPaymentDateString = sdf.format(calendar.getTime());
 
-            // Update UI with results
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+
             tvResultsTitle.setVisibility(View.VISIBLE);
             tvResultsTitle.setTextColor(Color.BLACK);
             tvMonthlyPayment.setVisibility(View.VISIBLE);
@@ -238,14 +214,13 @@ public class housingloan extends AppCompatActivity {
             tvTotalPayments.setVisibility(View.VISIBLE);
             tvLastPaymentDate.setVisibility(View.VISIBLE);
 
-            DecimalFormat df = new DecimalFormat("#,##0.00");
+            tvMonthlyPayment.setText("Monthly Payment: RM " + df.format(monthlyRepayment));
+            tvInterestPaid.setText("Interest Paid: RM " + df.format(interestPaid));
+            tvTotalPayments.setText("Total Payments: RM " + df.format(totalRepayment));
+            tvLastPaymentDate.setText("Last Payment Date: " + lastPaymentDateString);
 
-            tvMonthlyPayment.setText(String.format(Locale.getDefault(), "Monthly Payment: RM %s", df.format(monthlyRepayment)));
-            tvInterestPaid.setText(String.format(Locale.getDefault(), "Interest Paid: RM %s", df.format(interestPaid)));
-            tvTotalPayments.setText(String.format(Locale.getDefault(), "Total Payments: RM %s", df.format(totalRepayment)));
-            tvLastPaymentDate.setText(String.format(Locale.getDefault(), "Last Payment Date: %s", lastPaymentDateString));
         } catch (Exception e) {
-            e.printStackTrace();
+            showError("Error calculating loan. Please check inputs.");
         }
     }
 
@@ -255,8 +230,8 @@ public class housingloan extends AppCompatActivity {
             showError("Please enter a valid month");
             return;
         }
-        int specifiedMonth = Integer.parseInt(specifiedMonthStr);
 
+        int specifiedMonth = Integer.parseInt(specifiedMonthStr);
         if (specifiedMonth < 1 || specifiedMonth > totalMonths) {
             showError("Specified month exceeds loan term");
             return;
@@ -282,24 +257,17 @@ public class housingloan extends AppCompatActivity {
         LinearLayout llInterestDetails = findViewById(R.id.ll_interest_details);
         llInterestDetails.setVisibility(View.VISIBLE);
 
-        TextView tvInterestForMonth = findViewById(R.id.tv_interest_for_month);
         TextView tvPrincipalForMonth = findViewById(R.id.tv_principal_for_month);
         TextView tvRemainingBalanceForMonth = findViewById(R.id.tv_remaining_balance_for_month);
 
-        tvInterestForMonth.setText(String.format(Locale.getDefault(),
-                "Interest for Month %d: RM %s", specifiedMonth,
-                df.format(interestPaid)));
-        tvPrincipalForMonth.setText(String.format(Locale.getDefault(),
-                "Principal for Month %d: RM %s", specifiedMonth, df.format(principalPaid)));
-        tvRemainingBalanceForMonth.setText(String.format(Locale.getDefault(),
-                "Remaining Balance: RM %s", df.format(balance)));
+        tvInterestForMonth.setText(String.format("Interest for Month %d: RM %s", specifiedMonth, df.format(interestPaid)));
+        tvPrincipalForMonth.setText(String.format("Principal for Month %d: RM %s", specifiedMonth, df.format(principalPaid)));
+        tvRemainingBalanceForMonth.setText(String.format("Remaining Balance: RM %s", df.format(balance)));
     }
-
 
     private void showAmortizationSchedule() {
         double balance = loanAmount;
         ArrayList<String[]> schedule = new ArrayList<>();
-
         DecimalFormat df = new DecimalFormat("#,##0.00");
 
         for (int month = 1; month <= totalMonths; month++) {
@@ -315,8 +283,7 @@ public class housingloan extends AppCompatActivity {
         Intent intent = new Intent(housingloan.this, AmortizationSchedule.class);
         intent.putExtra("AMORTIZATION_DATA", schedule);
         intent.putExtra("LOAN_AMOUNT", loanAmount);
-        intent.putExtra("INTEREST_RATE", Double.parseDouble(etInterestRate.getText().
-                toString().replace("%", ""))); // Pass the user input interest rate
+        intent.putExtra("INTEREST_RATE", Double.parseDouble(etInterestRate.getText().toString().replace("%", "")));
         intent.putExtra("LOAN_TENURE", totalMonths);
         startActivity(intent);
     }
@@ -329,4 +296,67 @@ public class housingloan extends AppCompatActivity {
         tvTotalPayments.setVisibility(View.GONE);
         tvLastPaymentDate.setVisibility(View.GONE);
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_housingloan, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_info) {
+            showInfoDialog();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showInfoDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Housing Loan Calculation Guide")
+                .setMessage(
+                        "This calculator helps you analyze your housing loan with accurate formulas.\n\n" +
+
+                                "\u270D\ufe0f **Main Formula: Monthly Repayment**\n" +
+                                "  P = [r × L × (1 + r)^n] / [(1 + r)^n – 1]\n" +
+                                "  Where:\n" +
+                                "  • L = Loan amount\n" +
+                                "  • r = Monthly interest rate (annual rate ÷ 12 ÷ 100)\n" +
+                                "  • n = Loan term in months\n" +
+                                "  • P = Monthly payment\n\n" +
+
+                                "\uD83D\uDCB8 **Total Interest Paid**\n" +
+                                "  = (Monthly Payment × Total Months) – Loan Amount\n\n" +
+
+                                "\uD83D\uDCB0 **Total Repayment**\n" +
+                                "  = Monthly Payment × Total Months\n\n" +
+
+                                "\uD83D\uDCC5 **Last Payment Date**\n" +
+                                "  = Start Date + Loan Tenure (in months)\n\n" +
+
+                                "\uDCCB **Specified Month Calculation**\n" +
+                                "  For any month:\n" +
+                                "  • Interest = Remaining Balance × Monthly Interest Rate\n" +
+                                "  • Principal = Monthly Payment – Interest\n" +
+                                "  • New Balance = Previous Balance – Principal\n\n" +
+
+                                "\uD83D\uDCCA **Amortization Schedule**\n" +
+                                "  Shows a monthly breakdown of:\n" +
+                                "  • Beginning Balance\n" +
+                                "  • Monthly Payment\n" +
+                                "  • Interest Paid\n" +
+                                "  • Principal Paid\n" +
+                                "  • Remaining Balance\n\n" +
+
+                                "\uD83D\uDCA1 Tip:\n" +
+                                "  • Max tenure: Up to 35 years or until age 70\n" +
+                                "  • Fill all fields correctly for best results\n" +
+                                "  • Use amortization to plan early repayment"
+                )
+                .setPositiveButton("OK", null)
+                .show();
+    }
+
+
 }

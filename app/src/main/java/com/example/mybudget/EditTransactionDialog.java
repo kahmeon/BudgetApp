@@ -22,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -148,21 +149,25 @@ public class EditTransactionDialog extends DialogFragment {
             updatedTransaction.put("type", updatedType);
             updatedTransaction.put("category", updatedCategory);
             updatedTransaction.put("paymentMethod", updatedPaymentMethod);
-            updatedTransaction.put("date", date);
+            Timestamp timestamp = new Timestamp(new Date(date));
+            updatedTransaction.put("date", timestamp);
 
             FirebaseFirestore firestore = FirebaseFirestore.getInstance();
             firestore.collection("users")
                     .document(userId)
                     .collection("transactions")
-                    .document(transactionId) // Ensure this is not null
+                    .document(transactionId)  // ✅ Update specific transaction
                     .update(updatedTransaction)
                     .addOnSuccessListener(aVoid -> {
+                        Log.d("Update Debug", "Transaction updated successfully.");
                         Toast.makeText(getContext(), "Transaction updated successfully.", Toast.LENGTH_SHORT).show();
-                        dismiss();
+                        dismiss(); // Close the dialog after updating
                     })
                     .addOnFailureListener(e -> {
+                        Log.e("Update Debug", "Failed to update transaction.", e);
                         Toast.makeText(getContext(), "Failed to update transaction.", Toast.LENGTH_SHORT).show();
                     });
+
         });
 
 
@@ -241,7 +246,9 @@ public class EditTransactionDialog extends DialogFragment {
                         String category = document.getString("category");
                         String type = document.getString("type");
                         double amount = document.getDouble("amount");
-                        long date = document.getLong("date");
+                        Timestamp timestamp = document.getTimestamp("date");
+                        long date = (timestamp != null) ? timestamp.toDate().getTime() : 0;
+
                         String paymentMethod = document.getString("paymentMethod");
                         String description = document.getString("description");
 

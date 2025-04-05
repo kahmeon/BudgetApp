@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center"
+    android:background="@android:color/white">
+
+    <!-- Feedback Title -->
+    <TextView
+        android:id="@+id/feedback_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Provide Feedback"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:textColor="@color/colorPrimary"
+        android:layout_marginBottom="24dp"
+        android:layout_gravity="center"/>
+
+    <!-- Rating Bar -->
+    <RatingBar
+        android:id="@+id/rating_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:numStars="5"
+        android:rating="0"
+        android:stepSize="0.5"
+        android:layout_marginBottom="24dp"
+        android:layout_gravity="center"
+        android:contentDescription="Rate your experience from 1 to 5 stars"/>
+
+    <!-- Feedback Text Area -->
+    <EditText
+        android:id="@+id/feedback_text"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:hint="Write your feedback here..."
+        android:textColorHint="@android:color/darker_gray"
+        android:inputType="textMultiLine"
+        android:imeOptions="actionDone"
+        android:gravity="top|start"
+        android:textColor="@android:color/black"
+        android:layout_marginBottom="24dp"
+        android:background="@drawable/rounded_border"
+        android:padding="16dp"
+        android:scrollbars="vertical"/>
+
+    <!-- Submit Button -->
+    <Button
+        android:id="@+id/submit_feedback_button"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Submit Feedback"
+        android:background="@drawable/rounded_button"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:layout_marginBottom="24dp"
+        android:padding="12dp"/>
+
+    <!-- Thank You Message (initially invisible) -->
+    <TextView
+        android:id="@+id/thank_you_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Thank you for your feedback!"
+        android:textSize="18sp"
+        android:textColor="@color/colorPrimary"
+        android:visibility="gone"
+        android:layout_gravity="center"
+        android:layout_marginTop="24dp"/>
+
+</LinearLayout>
