@@ -17,3 +17,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "MyBudget"
 include ':app'
+project(":app").projectDir = file("app")

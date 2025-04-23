@@ -17,12 +17,22 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -154,10 +164,15 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         saveLoginState();
-                        Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                        finish();
+                        String userId = auth.getCurrentUser().getUid();
+                        insertDefaultCategoriesIfNeeded(userId, () -> {
+                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                            finish();
+                        });
+
                     } else {
+
+
                         String errorMessage;
                         if (task.getException() instanceof FirebaseAuthException) {
                             FirebaseAuthException exception = (FirebaseAuthException) task.getException();
@@ -239,8 +254,13 @@ public class LoginActivity extends AppCompatActivity {
                                     if (documentSnapshot.exists() && documentSnapshot.contains("username")) {
                                         // User has a username, go to MainActivity
                                         saveLoginState();
+                                        insertDefaultCategoriesIfNeeded(userId, () -> {
+                                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                            finish();
+                                        });
                                         startActivity(new Intent(LoginActivity.this, MainActivity.class));
                                         finish();
+
                                     } else {
                                         // Redirect to SetupProfileActivity if username doesn't exist
                                         Intent intent = new Intent(LoginActivity.this, SetupProfileActivity.class);
@@ -255,6 +275,59 @@ public class LoginActivity extends AppCompatActivity {
                         Toast.makeText(LoginActivity.this, "Authentication failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void insertDefaultCategoriesIfNeeded(String userId, Runnable onComplete) {
+        CollectionReference categoriesRef = db.collection("users")
+                .document(userId)
+                .collection("categories");
+
+        categoriesRef.get().addOnSuccessListener(snapshot -> {
+            List<String> existingNames = new ArrayList<>();
+            for (DocumentSnapshot doc : snapshot) {
+                String name = doc.getString("name");
+                if (name != null) {
+                    existingNames.add(name.toLowerCase());
+                }
+            }
+
+            String[][] defaultCategories = {
+                    {"Salary", "Income"},
+                    {"Bonus", "Income"},
+                    {"Food", "Expense"},
+                    {"Transport", "Expense"},
+                    {"Utilities", "Expense"},
+                    {"Entertainment", "Expense"},
+                    {"Health", "Expense"},
+                    {"Travel", "Expense"},
+                    {"Shopping", "Expense"},
+                    {"Snacks", "Expense"}
+            };
+
+            List<Task<?>> tasks = new ArrayList<>();
+            for (String[] pair : defaultCategories) {
+                String name = pair[0];
+                String type = pair[1];
+
+                if (!existingNames.contains(name.toLowerCase())) {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("name", name);
+                    data.put("type", type);
+                    tasks.add(categoriesRef.add(data));
+                }
+            }
+
+            if (tasks.isEmpty()) {
+                onComplete.run(); // Nothing to add, continue
+            } else {
+                Tasks.whenAllSuccess(tasks)
+                        .addOnSuccessListener(results -> onComplete.run())
+                        .addOnFailureListener(e -> {
+                            Log.e("LoginActivity", "Failed inserting defaults", e);
+                            onComplete.run(); // Continue even on failure
+                        });
+            }
+        });
     }
 
 

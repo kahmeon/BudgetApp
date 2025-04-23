@@ -1,187 +1,378 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white"
-    android:padding="24dp">
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center"
-        android:padding="16dp">
+        android:padding="24dp">
 
-        <!-- App Logo -->
-        <ImageView
-            android:id="@+id/app_logo"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:src="@drawable/logo"
-            android:contentDescription="App Logo"
-            android:layout_marginBottom="16dp" />
-
-        <!-- App Name -->
-        <TextView
-            android:id="@+id/app_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="MyBudget App"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="@color/colorPrimary"
-            android:layout_marginBottom="8dp" />
-
-        <!-- Purpose Section -->
-        <TextView
-            android:id="@+id/app_purpose_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="📌 Purpose of MyBudget"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/colorPrimary"
-            android:layout_marginBottom="4dp" />
-
-        <TextView
-            android:id="@+id/app_purpose_description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="MyBudget is designed to help users manage their finances efficiently by tracking income, expenses, budgets, and savings. It provides an intuitive way to control spending and achieve financial goals."
-            android:textSize="16sp"
-            android:textAlignment="center"
-            android:layout_marginBottom="16dp"
-            android:textColor="@android:color/black"/>
-
-        <!-- Key Features -->
-        <TextView
-            android:id="@+id/features_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="🔹 Key Features"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/colorPrimary"
-            android:layout_marginBottom="4dp" />
-
-        <TextView
-            android:id="@+id/features_description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="• Track income and expenses in real-time\n• Set monthly budgets and savings goals\n• Generate financial reports and insights\n• Secure cloud-based data storage with Firestore\n• User-friendly interface for easy navigation"
-            android:textSize="16sp"
-            android:layout_marginBottom="16dp"
-            android:textColor="@android:color/black"/>
-
-        <!-- How It Works -->
-        <TextView
-            android:id="@+id/how_it_works_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="📖 How It Works"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/colorPrimary"
-            android:layout_marginBottom="4dp" />
-
-        <TextView
-            android:id="@+id/how_it_works_description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="1. Sign up and log in to your account.\n2. Add your income and expenses.\n3. Set monthly budgets and financial goals.\n4. View reports to analyze spending patterns.\n5. Optimize your finances with insights!"
-            android:textSize="16sp"
-            android:layout_marginBottom="16dp"
-            android:textColor="@android:color/black"/>
-
-        <!-- Future Updates -->
-        <TextView
-            android:id="@+id/future_updates_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="🚀 Future Updates"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/colorPrimary"
-            android:layout_marginBottom="4dp" />
-
-        <TextView
-            android:id="@+id/future_updates_description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="• AI-powered spending suggestions\n• Integration with bank accounts for auto-tracking\n• Dark mode support\n• Custom categories for transactions"
-            android:textSize="16sp"
-            android:layout_marginBottom="16dp"
-            android:textColor="@android:color/black"/>
-
-        <!-- Developer Info -->
-        <TextView
-            android:id="@+id/developer_info"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="👨‍💻 Developed by: Pow Kah Meon"
-            android:textSize="16sp"
-            android:textStyle="italic"
-            android:textColor="@android:color/darker_gray"
-            android:layout_marginBottom="8dp" />
-
-        <!-- Contact Email -->
-        <TextView
-            android:id="@+id/developer_email"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="📧 Contact: kahmeon@example.com"
-            android:textSize="16sp"
-            android:textColor="@android:color/holo_blue_dark"
-            android:autoLink="email"
-            android:layout_marginBottom="16dp" />
-
-        <!-- Social Media Buttons -->
+        <!-- Header Section -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginBottom="24dp">
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingBottom="24dp">
 
-            <!-- GitHub Button -->
-            <ImageButton
-                android:id="@+id/btn_github"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="@android:drawable/ic_menu_compass"
-                android:contentDescription="GitHub"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_marginEnd="16dp" />
+            <ImageView
+                android:id="@+id/app_logo"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:src="@drawable/logo"
+                android:contentDescription="App Logo"
+                android:layout_marginBottom="16dp" />
 
-            <!-- Play Store Button -->
-            <ImageButton
-                android:id="@+id/btn_play_store"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="@android:drawable/ic_menu_info_details"
-                android:contentDescription="Visit Play Store"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_marginEnd="16dp" />
+            <TextView
+                android:id="@+id/app_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MyBudget App"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/colorPrimary" />
 
-            <!-- Email Button -->
-            <ImageButton
-                android:id="@+id/btn_email"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="@android:drawable/ic_dialog_email"
-                android:contentDescription="Send Email"
-                android:background="?attr/selectableItemBackgroundBorderless" />
+            <TextView
+                android:id="@+id/app_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Version 1.0.0"
+                android:textSize="14sp"
+                android:textColor="@android:color/darker_gray"
+                android:layout_marginTop="4dp" />
         </LinearLayout>
 
-        <!-- App Version -->
+        <!-- Card Views for Content Sections -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/app_purpose_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="📌 Purpose"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/colorPrimary"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/app_purpose_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="MyBudget helps you manage finances by tracking income, expenses, budgets, and savings. Get intuitive spending control and achieve financial goals."
+                    android:textSize="15sp"
+                    android:textColor="@android:color/black"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/features_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="🔹 Key Features"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/colorPrimary"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:divider="@drawable/divider_horizontal"
+                    android:showDividers="middle">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="• Track income and expenses in real-time"
+                        android:textSize="15sp"
+                        android:paddingVertical="4dp"
+                        android:textColor="@android:color/black"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="• Set monthly budgets and savings goals"
+                        android:textSize="15sp"
+                        android:paddingVertical="4dp"
+                        android:textColor="@android:color/black"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="• Generate financial reports and insights"
+                        android:textSize="15sp"
+                        android:paddingVertical="4dp"
+                        android:textColor="@android:color/black"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="• Secure cloud-based data storage"
+                        android:textSize="15sp"
+                        android:paddingVertical="4dp"
+                        android:textColor="@android:color/black"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="• User-friendly interface"
+                        android:textSize="15sp"
+                        android:paddingVertical="4dp"
+                        android:textColor="@android:color/black"/>
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/how_it_works_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="📖 How It Works"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/colorPrimary"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:divider="@drawable/divider_horizontal"
+                    android:showDividers="middle">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="1. Sign up and log in to your account"
+                        android:textSize="15sp"
+                        android:paddingVertical="4dp"
+                        android:textColor="@android:color/black"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="2. Add your income and expenses"
+                        android:textSize="15sp"
+                        android:paddingVertical="4dp"
+                        android:textColor="@android:color/black"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="3. Set monthly budgets and goals"
+                        android:textSize="15sp"
+                        android:paddingVertical="4dp"
+                        android:textColor="@android:color/black"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="4. View reports and analyze spending"
+                        android:textSize="15sp"
+                        android:paddingVertical="4dp"
+                        android:textColor="@android:color/black"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="5. Optimize your finances with insights"
+                        android:textSize="15sp"
+                        android:paddingVertical="4dp"
+                        android:textColor="@android:color/black"/>
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/future_updates_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="🚀 Coming Soon"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/colorPrimary"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:divider="@drawable/divider_horizontal"
+                    android:showDividers="middle">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="• AI-powered spending suggestions"
+                        android:textSize="15sp"
+                        android:paddingVertical="4dp"
+                        android:textColor="@android:color/black"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="• Bank account integration"
+                        android:textSize="15sp"
+                        android:paddingVertical="4dp"
+                        android:textColor="@android:color/black"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="• Dark mode support"
+                        android:textSize="15sp"
+                        android:paddingVertical="4dp"
+                        android:textColor="@android:color/black"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="• Custom transaction categories"
+                        android:textSize="15sp"
+                        android:paddingVertical="4dp"
+                        android:textColor="@android:color/black"/>
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Developer Section -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:id="@+id/developer_info"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="👨‍💻 Developed by Pow Kah Meon"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/darker_gray"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/developer_email"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📧 kahmeon@example.com"
+                    android:textSize="15sp"
+                    android:textColor="@color/colorPrimary"
+                    android:autoLink="email"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Social Media Buttons -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <ImageButton
+                        android:id="@+id/btn_github"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_github"
+                        android:contentDescription="GitHub"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:layout_marginEnd="8dp"
+                        app:tint="@color/colorPrimary" />
+
+                    <ImageButton
+                        android:id="@+id/btn_play_store"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_play_store"
+                        android:contentDescription="Play Store"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:layout_marginEnd="8dp"
+                        app:tint="@color/colorPrimary" />
+
+                    <ImageButton
+                        android:id="@+id/btn_email"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_email"
+                        android:contentDescription="Email"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        app:tint="@color/colorPrimary" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Footer -->
         <TextView
-            android:id="@+id/app_version"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Version 1.0.0"
-            android:textSize="14sp"
+            android:text="© 2023 MyBudget App"
+            android:textSize="12sp"
             android:textColor="@android:color/darker_gray"
-            android:layout_marginTop="16dp" />
-
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"/>
     </LinearLayout>
 </ScrollView>

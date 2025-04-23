@@ -28,4 +28,42 @@
     <color name="holo_red_dark">#E62222</color>
     <color name="red">#E62222</color>
     <color name="green">#4CAF50</color>
+
+    <color name="lightBackground">#FAFAFA</color>
+    <color name="textSecondary">#757575</color>
+    <color name="cardStroke">#E0E0E0</color>
+    <color name="text_secondary">#757575</color>
+    <color name="light_gray_background">#F5F5F6</color>
+
+
+        <!-- Material 3 Color System -->
+
+        <color name="colorPrimaryContainer">#FFF3E0</color>
+        <color name="colorOnPrimaryContainer">#2B1700</color>
+
+        <color name="colorSecondaryContainer">#FFDEA6</color>
+        <color name="colorOnSecondaryContainer">#271900</color>
+        <color name="colorTertiary">#6750A4</color>
+        <color name="colorTertiaryContainer">#E8DDFF</color>
+
+        <!-- Surface Colors -->
+        <color name="colorSurface">#FFFBF7</color>
+        <color name="colorSurfaceVariant">#F5F0E9</color>
+        <color name="colorOnSurface">#1D1B16</color>
+        <color name="colorOutline">#E0E0E0</color>
+
+        <!-- Chip Colors -->
+        <color name="income_chip_color">#E8F5E9</color>
+        <color name="expense_chip_color">#FFEBEE</color>
+
+        <!-- Status Colors -->
+        <color name="success">#4CAF50</color>
+        <color name="error">#F44336</color>
+        <color name="warning">#FF9800</color>
+
+
+
+        <!-- Icons -->
+        <color name="iconPrimary">#5D4037</color>
+
 </resources>

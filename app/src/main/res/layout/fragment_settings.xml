@@ -33,6 +33,7 @@
 
         <!-- Notification -->
         <androidx.cardview.widget.CardView
+            android:id="@+id/openNotificationButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
@@ -235,7 +236,7 @@
 
         <!-- categories -->
         <androidx.cardview.widget.CardView
-            android:id="@+id/category"
+            android:id="@+id/openCategoryButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"

@@ -390,10 +390,11 @@ public class TransactionsFragment extends Fragment {
         // Update categories based on transaction type selection
         rgType.setOnCheckedChangeListener((group, checkedId) -> {
             boolean isIncome = checkedId == R.id.rb_income;
-            setCategoryOptions(spinnerCategory, isIncome);
+            loadCategoriesFromFirestore(spinnerCategory, isIncome);
         });
 
-        setCategoryOptions(spinnerCategory, true);
+
+        loadCategoriesFromFirestore(spinnerCategory, true);
 
         btnAddTransaction.setOnClickListener(v -> {
             Log.d("AddTransaction", "Add Transaction button clicked"); // Debugging log
@@ -457,25 +458,58 @@ public class TransactionsFragment extends Fragment {
 
     }
 
-
     private void setCategoryOptions(Spinner spinnerCategory, boolean isIncome) {
-        List<String> categories = new ArrayList<>();
-        if (isIncome) {
-            categories.add("Salary");
-            categories.add("Investment");
-            categories.add("Other");
-        } else {
-            categories.add("Food");
-            categories.add("Rent");
-            categories.add("Transport");
-            categories.add("Travel");
-            categories.add("Other");
-        }
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String type = isIncome ? "Income" : "Expense";
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, categories);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerCategory.setAdapter(adapter);
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(userId)
+                .collection("categories")
+                .whereEqualTo("type", type)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<String> categories = new ArrayList<>();
+                    for (DocumentSnapshot doc : querySnapshot) {
+                        String name = doc.getString("name");
+                        if (name != null) categories.add(name);
+                    }
+
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
+                            android.R.layout.simple_spinner_item, categories);
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spinnerCategory.setAdapter(adapter);
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(getContext(), "Failed to load categories", Toast.LENGTH_SHORT).show());
     }
 
+
+    private void loadCategoriesFromFirestore(Spinner spinner, boolean isIncome) {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String type = isIncome ? "Income" : "Expense";
+
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(userId)
+                .collection("categories")
+                .whereEqualTo("type", type)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<String> categories = new ArrayList<>();
+                    for (DocumentSnapshot doc : querySnapshot) {
+                        String name = doc.getString("name");
+                        if (name != null) categories.add(name);
+                    }
+
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, categories);
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spinner.setAdapter(adapter);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("AddTransaction", "Failed to load categories", e);
+                    Toast.makeText(getContext(), "Failed to load categories", Toast.LENGTH_SHORT).show();
+                });
+    }
 
 }

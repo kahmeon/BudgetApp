@@ -23,19 +23,28 @@ public class SettingsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
-        // Open Calculator
+        // Buttons for navigation
         LinearLayout openCalculatorButton = view.findViewById(R.id.openCalculatorButton);
         openCalculatorButton.setOnClickListener(v -> openCalculator());
+
         LinearLayout openBudgetButton = view.findViewById(R.id.openBudgetButton);
-        openBudgetButton.setOnClickListener(v->openBudget());
+        openBudgetButton.setOnClickListener(v -> openBudget());
+
         LinearLayout openFeedbackButton = view.findViewById(R.id.openFeedbackButton);
-        openFeedbackButton.setOnClickListener(v->openFeedback());
+        openFeedbackButton.setOnClickListener(v -> openFeedback());
+
         LinearLayout openAboutButton = view.findViewById(R.id.openAboutButton);
         openAboutButton.setOnClickListener(v -> openAbout());
+
         LinearLayout openSavingGoalsButton = view.findViewById(R.id.openSavingGoalsButton);
         openSavingGoalsButton.setOnClickListener(v -> openSavingGoals());
 
+        CardView openCategoryButton = view.findViewById(R.id.openCategoryButton);
+        openCategoryButton.setOnClickListener(v -> openCategoryPage());
 
+        CardView openNotificationButton = view.findViewById(R.id.openNotificationButton);
+
+        openNotificationButton.setOnClickListener(v -> openNotificationPage());
 
         // Logout Button
         CardView logoutButton = view.findViewById(R.id.logout);
@@ -49,7 +58,7 @@ public class SettingsFragment extends Fragment {
         startActivity(intent);
     }
 
-    private void openBudget(){
+    private void openBudget() {
         Intent intent = new Intent(getActivity(), BudgetActivity.class);
         startActivity(intent);
     }
@@ -59,35 +68,40 @@ public class SettingsFragment extends Fragment {
         startActivity(intent);
     }
 
-
-    private void openFeedback(){
+    private void openFeedback() {
         Intent intent = new Intent(getActivity(), FeedbackActivity.class);
         startActivity(intent);
     }
 
-    private void openAbout(){
+    private void openAbout() {
         Intent intent = new Intent(getActivity(), AboutActivity.class);
         startActivity(intent);
     }
 
-    private void logout() {
-        FirebaseAuth.getInstance().signOut(); // Sign out from Firebase
+    private void openCategoryPage() {
+        Intent intent = new Intent(getActivity(), AddCategoryActivity.class);
+        startActivity(intent);
+    }
 
-        // Update SharedPreferences to indicate the user is logged out
+    private void openNotificationPage() {
+        Intent intent = new Intent(getActivity(), NotificationSettingsActivity.class);
+        startActivity(intent);
+    }
+
+    private void logout() {
+        FirebaseAuth.getInstance().signOut(); // Firebase sign out
+
         SharedPreferences prefs = requireActivity().getSharedPreferences("loginPrefs", requireActivity().MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean("isLoggedIn", false);
         editor.apply();
 
-        // Redirect to LoginActivity with flags to clear back stack
         Intent intent = new Intent(getActivity(), LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
 
-        // Close MainActivity to prevent back navigation
         requireActivity().finishAffinity();
 
-        // Show logout confirmation
         Toast.makeText(getContext(), "Logged out successfully", Toast.LENGTH_SHORT).show();
     }
 }

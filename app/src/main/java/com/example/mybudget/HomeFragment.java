@@ -400,10 +400,12 @@ public class HomeFragment extends Fragment {
         // Update categories based on transaction type selection
         rgType.setOnCheckedChangeListener((group, checkedId) -> {
             boolean isIncome = checkedId == R.id.rb_income;
-            setCategoryOptions(spinnerCategory, isIncome);
+            loadCategories(spinnerCategory, isIncome);
         });
 
-        setCategoryOptions(spinnerCategory, true);
+
+        loadCategories(spinnerCategory, true);
+
 
         btnAddTransaction.setOnClickListener(v -> {
             String amountText = etAmount.getText().toString().trim();
@@ -447,32 +449,91 @@ public class HomeFragment extends Fragment {
                         Toast.makeText(getContext(), "Transaction added", Toast.LENGTH_SHORT).show();
                         dialog.dismiss();
                         loadUserTransactions();
+
+                        if (type.equals("Expense")) {
+                            updateCategorySpent(userId, category, amount);
+                        }
                     })
+
                     .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to add transaction", Toast.LENGTH_SHORT).show());
         });
 
         dialog.show();
     }
 
+    private void updateCategorySpent(String userId, String category, double amount) {
+        firestore.collection("users")
+                .document(userId)
+                .collection("budget")
+                .document("monthly")
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Map<String, Object> categoriesMap = (Map<String, Object>) documentSnapshot.get("categories");
+                        if (categoriesMap == null) categoriesMap = new HashMap<>();
 
-    private void setCategoryOptions(Spinner spinnerCategory, boolean isIncome) {
-        List<String> categories = new ArrayList<>();
-        if (isIncome) {
-            categories.add("Salary");
-            categories.add("Investment");
-            categories.add("Other");
-        } else {
-            categories.add("Food");
-            categories.add("Rent");
-            categories.add("Transport");
-            categories.add("Travel");
-            categories.add("Other");
-        }
+                        Object categoryObj = categoriesMap.get(category);
+                        Map<String, Object> categoryData;
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, categories);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerCategory.setAdapter(adapter);
+                        if (categoryObj instanceof Map) {
+                            categoryData = (Map<String, Object>) categoryObj;
+                        } else {
+                            categoryData = new HashMap<>();
+                            categoryData.put("budget", categoryObj instanceof Number ? ((Number) categoryObj).intValue() : 0);
+                            categoryData.put("spent", 0);
+                        }
+
+                        double currentSpent = categoryData.get("spent") instanceof Number
+                                ? ((Number) categoryData.get("spent")).doubleValue() : 0;
+
+                        categoryData.put("spent", currentSpent + amount);
+                        categoriesMap.put(category, categoryData);
+
+                        firestore.collection("users")
+                                .document(userId)
+                                .collection("budget")
+                                .document("monthly")
+                                .update("categories", categoriesMap)
+                                .addOnSuccessListener(aVoid ->
+                                        Log.d("HomeFragment", "Updated category spent: " + category))
+                                .addOnFailureListener(e ->
+                                        Log.e("HomeFragment", "Failed to update category spent", e));
+                    }
+                });
     }
 
+
+    private void loadCategories(Spinner spinnerCategory, boolean isIncome) {
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(getContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String userId = currentUser.getUid();
+
+        firestore.collection("users").document(userId)
+                .collection("categories")
+                .whereEqualTo("type", isIncome ? "Income" : "Expense")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<String> categories = new ArrayList<>();
+                    for (DocumentSnapshot document : queryDocumentSnapshots) {
+                        String name = document.getString("name");
+                        if (name != null) {
+                            categories.add(name);
+                        }
+                    }
+
+                    if (categories.isEmpty()) {
+                        categories.add("No categories found");
+                    }
+
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, categories);
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spinnerCategory.setAdapter(adapter);
+                })
+                .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to load categories", Toast.LENGTH_SHORT).show());
+    }
 
 }
