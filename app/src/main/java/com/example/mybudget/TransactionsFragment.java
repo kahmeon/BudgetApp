@@ -44,8 +44,10 @@ import com.google.firebase.firestore.Query;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class TransactionsFragment extends Fragment {
 
@@ -205,69 +207,44 @@ public class TransactionsFragment extends Fragment {
 
     private void loadUserTransactions() {
         FirebaseUser currentUser = auth.getCurrentUser();
-        if (currentUser == null) {
-            Toast.makeText(getContext(), "User not logged in", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        if (currentUser == null) return;
 
         String userId = currentUser.getUid();
-        Log.d("TransactionsFragment", "Loading transactions for user: " + userId);
-
         firestore.collection("users").document(userId).collection("transactions")
                 .orderBy("date", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    Set<String> loadedIds = new HashSet<>(); // 🔁 fix here
                     transactionsList.clear();
-                    double totalIncome = 0;
-                    double totalExpense = 0;
+                    double totalIncome = 0, totalExpense = 0;
 
                     for (DocumentSnapshot document : queryDocumentSnapshots) {
                         TransactionModel transaction = document.toObject(TransactionModel.class);
-                        if (transaction != null) {
-                            transaction.setId(document.getId());
-                            Log.d("Firestore Debug", "Transaction Loaded: ID=" + document.getId());
+                        if (transaction == null) continue;
 
-                            // 🔥 Fix: Convert `date` safely
-                            Object dateObj = document.get("date");
-                            long date;
-                            if (dateObj instanceof Timestamp) {
-                                date = ((Timestamp) dateObj).toDate().getTime(); // ✅ Convert `Timestamp` to milliseconds
-                            } else if (dateObj instanceof Long) {
-                                date = (Long) dateObj; // Already stored as `long`
-                            } else {
-                                date = 0; // Default value if null
-                            }
+                        String docId = document.getId();
+                        if (loadedIds.contains(docId)) continue; // ✅ prevent duplicates
+                        loadedIds.add(docId);
 
-                            transaction.setDate(date); // ✅ Set corrected `date`
-                            transactionsList.add(transaction);
+                        transaction.setId(docId);
 
-                            if ("Income".equals(transaction.getType())) {
-                                totalIncome += transaction.getAmount();
-                            } else if ("Expense".equals(transaction.getType())) {
-                                totalExpense += transaction.getAmount();
-                            }
-                        }
+                        Object dateObj = document.get("date");
+                        long date = (dateObj instanceof Timestamp) ?
+                                ((Timestamp) dateObj).toDate().getTime() :
+                                (dateObj instanceof Long) ? (Long) dateObj : 0;
+                        transaction.setDate(date);
+                        transactionsList.add(transaction);
+
+                        if ("Income".equals(transaction.getType())) totalIncome += transaction.getAmount();
+                        else if ("Expense".equals(transaction.getType())) totalExpense += transaction.getAmount();
                     }
 
                     transactionsAdapter.notifyDataSetChanged();
-
-                    if (tvTotalIncome != null) {
-                        tvTotalIncome.setText(String.format("Income: $%.2f", totalIncome));
-                    }
-
-                    if (tvTotalExpense != null) {
-                        tvTotalExpense.setText(String.format("Expense: $%.2f", totalExpense));
-                    }
-
-                    if (tvCurrentBalance != null) {
-                        double currentBalance = totalIncome - totalExpense;
-                        tvCurrentBalance.setText(String.format("$%.2f", currentBalance));
-                    }
-
-                    Log.d("TransactionsFragment", "Total Income: " + totalIncome + ", Total Expense: " + totalExpense);
-                })
-                .addOnFailureListener(e -> Log.e("TransactionsFragment", "Error loading transactions", e));
-
+                    tvTotalIncome.setText(String.format("Income: %s%.2f", currencySymbol, totalIncome));
+                    tvTotalExpense.setText(String.format("Expense: %s%.2f", currencySymbol, totalExpense));
+                    if (tvCurrentBalance != null)
+                        tvCurrentBalance.setText(String.format("%s%.2f", currencySymbol, totalIncome - totalExpense));
+                });
     }
 
 
@@ -281,26 +258,22 @@ public class TransactionsFragment extends Fragment {
         String userId = currentUser.getUid();
         TransactionModel transactionToDelete = transactionsList.get(position);
 
-        // Reference to the transaction in Firestore
         firestore.collection("users")
                 .document(userId)
                 .collection("transactions")
-                .whereEqualTo("date", transactionToDelete.getDate())
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        queryDocumentSnapshots.getDocuments().get(0).getReference().delete()
-                                .addOnSuccessListener(aVoid -> {
-                                    // Remove the transaction from the local list
-                                    transactionsList.remove(position);
-                                    transactionsAdapter.notifyItemRemoved(position);
-                                    Toast.makeText(getContext(), "Transaction deleted", Toast.LENGTH_SHORT).show();
-                                })
-                                .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to delete transaction", Toast.LENGTH_SHORT).show());
-                    }
+                .document(transactionToDelete.getId()) // ✅ Use the document ID
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    transactionsList.remove(position);
+                    transactionsAdapter.notifyItemRemoved(position);
+                    Toast.makeText(getContext(), "Transaction deleted", Toast.LENGTH_SHORT).show();
                 })
-                .addOnFailureListener(e -> Toast.makeText(getContext(), "Error finding transaction", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    Log.e("TransactionsFragment", "Failed to delete transaction", e);
+                    Toast.makeText(getContext(), "Failed to delete transaction", Toast.LENGTH_SHORT).show();
+                });
     }
+
 
 
     private void loadPaymentMethods(Spinner spinner) {
@@ -352,6 +325,7 @@ public class TransactionsFragment extends Fragment {
                 .setView(dialogView)
                 .create();
 
+        // References to views
         EditText etAmount = dialogView.findViewById(R.id.et_amount);
         EditText etDescription = dialogView.findViewById(R.id.et_description);
         TextView tvSelectedDate = dialogView.findViewById(R.id.tv_selected_date);
@@ -361,104 +335,88 @@ public class TransactionsFragment extends Fragment {
         Button btnSelectDate = dialogView.findViewById(R.id.btn_select_date);
         Button btnAddTransaction = dialogView.findViewById(R.id.btn_add_transaction);
 
-        // Initialize date as today's date as a fallback
         final long[] selectedDate = {System.currentTimeMillis()};
         loadPaymentMethods(spinnerPaymentMethod);
 
-        // Set up date picker dialog
         btnSelectDate.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
             DatePickerDialog datePickerDialog = new DatePickerDialog(getContext(), (view, year, month, dayOfMonth) -> {
                 calendar.set(year, month, dayOfMonth);
-
-                // Ensure no future dates are selected
                 if (calendar.getTimeInMillis() > System.currentTimeMillis()) {
                     Toast.makeText(getContext(), "You cannot select a future date", Toast.LENGTH_SHORT).show();
                     return;
                 }
-
-                selectedDate[0] = calendar.getTimeInMillis(); // Store the selected date
-                String formattedDate = dayOfMonth + "/" + (month + 1) + "/" + year;
-                tvSelectedDate.setText(formattedDate);
+                selectedDate[0] = calendar.getTimeInMillis();
+                tvSelectedDate.setText(dayOfMonth + "/" + (month + 1) + "/" + year);
             }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
 
-            // Set max date to today
             datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
             datePickerDialog.show();
         });
 
-        // Update categories based on transaction type selection
         rgType.setOnCheckedChangeListener((group, checkedId) -> {
             boolean isIncome = checkedId == R.id.rb_income;
             loadCategoriesFromFirestore(spinnerCategory, isIncome);
         });
 
-
         loadCategoriesFromFirestore(spinnerCategory, true);
 
+        dialog.show();
+
         btnAddTransaction.setOnClickListener(v -> {
-            Log.d("AddTransaction", "Add Transaction button clicked"); // Debugging log
+            Log.d("AddTransaction", "Add Transaction button clicked");
 
             String amountText = etAmount.getText().toString().trim();
             String description = etDescription.getText().toString().trim();
-            String category = spinnerCategory.getSelectedItem().toString();
-            String paymentMethod = spinnerPaymentMethod.getSelectedItem().toString();
             int selectedTypeId = rgType.getCheckedRadioButtonId();
 
-            if (TextUtils.isEmpty(amountText) || TextUtils.isEmpty(description) || TextUtils.isEmpty(category) ||
-                    selectedTypeId == -1 || TextUtils.isEmpty(paymentMethod)) {
-                Log.e("AddTransaction", "Validation failed: Missing fields");
+            if (TextUtils.isEmpty(amountText) || TextUtils.isEmpty(description) || selectedTypeId == -1 ||
+                    spinnerCategory.getSelectedItem() == null || spinnerPaymentMethod.getSelectedItem() == null) {
                 Toast.makeText(getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             double amount = Double.parseDouble(amountText);
             String type = ((RadioButton) dialogView.findViewById(selectedTypeId)).getText().toString();
+            String category = spinnerCategory.getSelectedItem().toString();
+            String paymentMethod = spinnerPaymentMethod.getSelectedItem().toString();
 
             FirebaseUser currentUser = auth.getCurrentUser();
             if (currentUser == null) {
-                Log.e("AddTransaction", "User not logged in");
                 Toast.makeText(getContext(), "User not logged in", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             String userId = currentUser.getUid();
-            Log.d("AddTransaction", "User ID: " + userId);
-
-            // 🔥 Convert `long` to Firestore `Timestamp`
             Timestamp timestamp = new Timestamp(selectedDate[0] / 1000, 0);
-            Log.d("AddTransaction", "Selected Date Timestamp: " + timestamp.toDate());
 
-            // Prepare transaction data
             Map<String, Object> transactionData = new HashMap<>();
             transactionData.put("amount", amount);
             transactionData.put("description", description);
             transactionData.put("category", category);
             transactionData.put("paymentMethod", paymentMethod);
             transactionData.put("type", type);
-            transactionData.put("date", timestamp); // ✅ Store as Firestore `Timestamp`
+            transactionData.put("date", timestamp);
 
-            Log.d("AddTransaction", "Transaction Data: " + transactionData);
-
-            // Save transaction to Firestore
             firestore.collection("users").document(userId).collection("transactions")
                     .add(transactionData)
-                    .addOnSuccessListener(documentReference -> {
-                        Log.d("AddTransaction", "Transaction added successfully: " + documentReference.getId());
-                        Toast.makeText(getContext(), "Transaction added", Toast.LENGTH_SHORT).show();
-                        dialog.dismiss();
-                        loadUserTransactions();
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("AddTransaction", "Failed to add transaction", e);
-                        Toast.makeText(getContext(), "Failed to add transaction", Toast.LENGTH_SHORT).show();
+                    .addOnCompleteListener(task -> {
+                        requireActivity().runOnUiThread(() -> {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(getContext(), "Transaction added", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Log.e("AddTransaction", "Offline or failed: " + task.getException());
+                                Toast.makeText(getContext(), "Saved offline. Will sync when online.", Toast.LENGTH_SHORT).show();
+
+                            }
+                            dialog.dismiss(); // ✅ Always close regardless of success or failure
+                            loadUserTransactions(); // ✅ Refresh list
+                        });
                     });
         });
-
-
     }
 
-    private void setCategoryOptions(Spinner spinnerCategory, boolean isIncome) {
+        private void setCategoryOptions(Spinner spinnerCategory, boolean isIncome) {
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         String type = isIncome ? "Income" : "Expense";
 

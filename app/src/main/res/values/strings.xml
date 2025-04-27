@@ -57,5 +57,74 @@
     <string name="error_updating_password">Failed to update password: %1$s</string>
     <string name="success_profile_saved">Profile saved successfully</string>
 
+    <!-- Purpose Section -->
+    <string name="purpose_title">Purpose</string>
+    <string name="purpose_description">MyBudget helps you manage finances by tracking income, expenses, budgets, and savings. Get intuitive spending control and achieve financial goals with powerful insights.</string>
+
+    <!-- Features Section -->
+    <string name="features_title">Key Features</string>
+    <string name="feature_1">Track income and expenses in real-time</string>
+    <string name="feature_2">Set monthly budgets and savings goals</string>
+    <string name="feature_3">Generate financial reports and insights</string>
+    <string name="feature_4">Secure cloud-based data storage</string>
+    <string name="feature_5">User-friendly interface with dark mode</string>
+
+    <!-- How It Works -->
+    <string name="how_it_works_title">How It Works</string>
+    <string name="step_1">Sign up and log in to your account</string>
+    <string name="step_2">Add your income and expenses</string>
+    <string name="step_3">Set monthly budgets and goals</string>
+    <string name="step_4">View reports and analyze spending</string>
+    <string name="step_5">Optimize your finances with insights</string>
+
+    <!-- Coming Soon -->
+    <string name="coming_soon_title">Coming Soon</string>
+    <string name="update_1">AI-powered spending suggestions</string>
+    <string name="update_2">Bank account integration</string>
+    <string name="update_3">Enhanced dark mode support</string>
+    <string name="update_4">Custom transaction categories</string>
+
+    <!-- Developer Info -->
+    <string name="developed_by">Developed by Pow Kah Meon</string>
+    <string name="developer_email">contact@mybudgetapp.com</string>
+    <string name="developer_website">https://mybudgetapp.com</string>
+    <string name="follow_us">Follow us for updates</string>
+
+    <!-- Social Media -->
+    <string name="github">GitHub</string>
+    <string name="twitter">Twitter</string>
+    <string name="play_store">Play Store</string>
+    <string name="email">Email</string>
+    <string name="web">Website</string>
+
+    <string name="version_format">Version %1$s</string>
+    <string name="copyright">© 2023 MyBudget App. All rights reserved.</string>
+    <!-- Balance Section -->
+    <string name="current_balance">Current Balance</string>
+
+    <!-- Income & Expense -->
+    <string name="income">Income</string>
+    <string name="expense">Expense</string>
+
+    <!-- Saving Goals -->
+    <string name="saving_goals">Saving Goals</string>
+
+    <!-- Transaction History -->
+    <string name="transaction_history">Transaction History</string>
+    <string name="view_all">View All</string>
+    <string name="no_transactions">No transactions yet</string>
+
+    <!-- FAB -->
+    <string name="add_transaction">Add Transaction</string>
+
+    <!-- Accessibility -->
+    <string name="content_description_add_transaction">Button to add a new transaction</string>
+
+    <string-array name="time_period_options">
+        <item>All Time</item>
+        <item>Weekly</item>
+        <item>Monthly</item>
+        <item>Yearly</item>
+    </string-array>
 
 </resources>

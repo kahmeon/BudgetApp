@@ -65,5 +65,93 @@
 
         <!-- Icons -->
         <color name="iconPrimary">#5D4037</color>
+    <!-- Add these inside your <resources> tag -->
+
+    <!-- Currency Exchange Specific Colors -->
+    <color name="primaryText">@color/textPrimary</color>
+    <color name="secondaryText">@color/textSecondary</color>
+
+    <!-- Background Colors -->
+    <color name="background">@color/colorBackground</color>
+    <color name="cardBackground">@color/white</color>
+
+    <!-- Button & Interactive Elements -->
+    <color name="buttonPrimary">@color/colorPrimary</color>
+    <color name="buttonText">@color/white</color>
+
+    <!-- Text Input Colors -->
+    <color name="inputBackground">@color/white</color>
+    <color name="inputStroke">@color/colorPrimary</color>
+    <color name="inputText">@color/textPrimary</color>
+    <color name="inputHint">@color/textHint</color>
+
+    <!-- Chart Colors -->
+    <color name="chartLine">@color/colorPrimary</color>
+    <color name="chartFill">#30F4AF49</color> <!-- Primary color with 30% opacity -->
+    <color name="chartGrid">@color/cardStroke</color>
+    <color name="chartText">@color/textSecondary</color>
+
+    <!-- Status Colors -->
+    <color name="rateUp">@color/green</color>
+    <color name="rateDown">@color/holo_red_dark</color>
+    <color name="rateNeutral">@color/textSecondary</color>
+
+    <!-- Spinner Colors -->
+    <color name="spinnerBackground">@color/white</color>
+    <color name="spinnerText">@color/textPrimary</color>
+
+    <!-- Divider Colors -->
+    <color name="divider">@color/cardStroke</color>
+
+    <!-- Shadow Colors -->
+    <color name="shadow">#26000000</color> <!-- Black with 15% opacity -->
+
+    <!-- Currency Specific Colors -->
+    <color name="usdColor">#4CAF50</color>
+    <color name="eurColor">#2196F3</color>
+    <color name="gbpColor">#F44336</color>
+    <color name="jpyColor">#FF9800</color>
+    <color name="cnyColor">#E91E63</color>
+    <color name="myrColor">#9C27B0</color>
+
+
+    <color name="colorPrimaryDark">#303F9F</color>
+
+    <!-- Text colors -->
+
+    <color name="textSecondaryLight">#BDBDBD</color>
+    <color name="textSecondaryDark">#616161</color>
+
+    <!-- Background colors -->
+    <color name="circleNumberBackground">#E8EAF6</color>
+    <color name="md_theme_background">#FDFDFD</color>
+    <color name="primary">#6750A4</color>
+    <color name="onPrimary">#FFFFFF</color>
+    <color name="primaryContainer">#EADDFF</color>
+
+    <!-- Secondary colors -->
+    <color name="secondary">#625B71</color>
+    <color name="onSecondary">#FFFFFF</color>
+
+    <!-- Surface colors -->
+    <color name="surface">#FFFBFE</color>
+    <color name="onSurface">#1C1B1F</color>
+    <color name="surfaceVariant">#E7E0EC</color>
+
+    <!-- Error colors -->
+
+    <color name="onError">#FFFFFF</color>
+
+    <!-- Outline -->
+    <color name="outline">#79747E</color>
+
+    <!-- Custom colors for progress -->
+    <color name="progress_background">#E7E0EC</color>
+    <color name="progress_fill">#6750A4</color>
+    <color name="colorSurfaceContainerHigh">#FFFFFF</color>
+    <color name="colorOnSurfaceVariant">#888888</color>
+
+    <color name="green_500">#4CAF50</color> <!-- Google Material Green -->
+    <color name="red_500">#F44336</color>   <!-- Google Material Red -->
 
 </resources>

@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
@@ -63,10 +64,9 @@ public class ReportsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_reports, container, false);
 
         // Initialize UI elements
-
         tabExpense = view.findViewById(R.id.tab_expense);
         tabRevenue = view.findViewById(R.id.tab_revenue);
-        tabExpensesRevenue=view.findViewById(R.id.tab_expenses_revenue);
+        tabExpensesRevenue = view.findViewById(R.id.tab_expenses_revenue);
         recyclerViewReports = view.findViewById(R.id.recycler_view_reports);
         pieChart = view.findViewById(R.id.pie_chart);
         spinnerMonth = view.findViewById(R.id.spinner_month);
@@ -74,10 +74,24 @@ public class ReportsFragment extends Fragment {
         textViewSelectDate = view.findViewById(R.id.text_view_date_range);
         dateSelectionLayout = view.findViewById(R.id.date_selection_layout);
 
+
+
+
+        // Set adapters for spinners
+        ArrayAdapter<CharSequence> monthAdapter = ArrayAdapter.createFromResource(
+                getContext(), R.array.months, android.R.layout.simple_spinner_item);
+        monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerMonth.setAdapter(monthAdapter);
+
+        ArrayAdapter<CharSequence> yearAdapter = ArrayAdapter.createFromResource(
+                getContext(), R.array.years, android.R.layout.simple_spinner_item);
+        yearAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerYear.setAdapter(yearAdapter);
+
+        // Set default spinner values
         initializeDefaults();
 
-
-        // Initialize Firebase Firestore
+        // Initialize Firestore
         db = FirebaseFirestore.getInstance();
 
         // Setup RecyclerView
@@ -86,23 +100,16 @@ public class ReportsFragment extends Fragment {
         adapter = new TransactionsAdapter(transactionList);
         recyclerViewReports.setAdapter(adapter);
 
-        // Set up tabs and spinner listeners
+        // Tab click listeners
         setupTabListeners();
 
-
-        // Load initial data for "Expense" tab
+        // Load initial data
         fetchTransactions();
         fetchChartData();
 
-
-
-        // After fetching or updating your category sums and totalAmount
-        HashMap<String, Float> categorySums = new HashMap<>();
-        float totalAmount = calculateTotalAmount(categorySums); // Implement this method or variable
-
-
         return view;
     }
+
 
     private float calculateTotalAmount(HashMap<String, Float> categorySums) {
         float total = 0f;
@@ -616,28 +623,35 @@ public class ReportsFragment extends Fragment {
 
 
     private void updatePieChart(ArrayList<PieEntry> entries) {
-        // Create a dataset and assign it to the PieChart
         PieDataSet dataSet = new PieDataSet(entries, "Transactions");
-        dataSet.setColors(ColorTemplate.COLORFUL_COLORS); // Set colors
-        dataSet.setValueTextSize(12f); // Set text size
-        dataSet.setSliceSpace(3f); // Add spacing between slices
-        dataSet.setSelectionShift(5f); // Increase selection shift for selected slices
+        dataSet.setColors(ColorTemplate.COLORFUL_COLORS);
+        dataSet.setValueTextSize(12f);
+        dataSet.setSliceSpace(3f);
+        dataSet.setSelectionShift(5f);
 
-        // Create PieData and set it to the PieChart
         PieData pieData = new PieData(dataSet);
-        pieData.setValueTextColor(Color.WHITE); // Set text color
+        pieData.setValueTextColor(Color.WHITE);
         pieData.setValueTextSize(12f);
 
         pieChart.setData(pieData);
-        pieChart.invalidate(); // Refresh the chart
-        pieChart.setUsePercentValues(true); // Show values as percentages
-        pieChart.getDescription().setEnabled(false); // Disable description
-        pieChart.setDrawHoleEnabled(true); // Enable hole in the center
-        pieChart.setHoleRadius(40f); // Set the hole radius
-        pieChart.setTransparentCircleRadius(50f); // Set the transparent circle radius
-        pieChart.setRotationEnabled(true); // Enable rotation
-    }
+        pieChart.invalidate();
+        pieChart.setUsePercentValues(true);
+        pieChart.getDescription().setEnabled(false);
+        pieChart.setDrawHoleEnabled(true);
+        pieChart.setHoleRadius(40f);
+        pieChart.setTransparentCircleRadius(50f);
+        pieChart.setRotationEnabled(true);
 
+        // ✅ Add this block to wrap the legend
+        Legend legend = pieChart.getLegend();
+        legend.setWordWrapEnabled(true); // 🔥 Wraps legends to next line
+        legend.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
+        legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+        legend.setOrientation(Legend.LegendOrientation.HORIZONTAL);
+        legend.setDrawInside(false);
+        legend.setTextSize(12f);
+        legend.setForm(Legend.LegendForm.CIRCLE);
+    }
 
 
 }

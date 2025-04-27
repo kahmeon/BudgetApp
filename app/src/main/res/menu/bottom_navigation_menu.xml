@@ -4,10 +4,7 @@
         android:id="@+id/nav_dashboard"
         android:icon="@drawable/ic_home"
         android:title="dashboard"/>
-    <item
-        android:id="@+id/nav_transactions"
-        android:icon="@drawable/ic_transactions"
-        android:title="Transactions"/>
+
     <item
         android:id="@+id/nav_wallets"
         android:icon="@drawable/ic_budget"

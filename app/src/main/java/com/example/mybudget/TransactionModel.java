@@ -1,41 +1,25 @@
 package com.example.mybudget;
 
-import android.os.Parcelable;
-
 import com.google.firebase.Timestamp;
 
 /**
  * Model class for representing a transaction in the budget app.
  */
 public class TransactionModel {
-    private double amount;         // Transaction amount
-    private String category;       // Transaction category (e.g., Food, Rent, etc.)
-    private String paymentMethod;  // Payment method (e.g., Credit Card, Cash)
-    private String type;           // Transaction type (Income or Expense)
-    private String description;    // Description of the transaction
-    private long date;             // Timestamp for the transaction date
-    private String imageUrl;       // URL for the image (Firebase Storage)
-    private String location;       // Location of the transaction
-    private String id;             // Firestore document ID
+    private double amount;
+    private String category;
+    private String paymentMethod;
+    private String type;
+    private String description;
+    private long date;
+    private String imageUrl;
+    private String location;
+    private String id;
 
-    /**
-     * Default constructor (required for Firebase Firestore).
-     */
+    // 🔹 Default constructor (needed for Firestore deserialization)
     public TransactionModel() {}
 
-    /**
-     * Parameterized constructor for initializing the transaction model.
-     *
-     * @param id            Firestore document ID.
-     * @param category      The transaction category.
-     * @param type          The type of transaction (Income or Expense).
-     * @param description   A brief description of the transaction.
-     * @param paymentMethod The payment method used.
-     * @param amount        The transaction amount.
-     * @param date          The timestamp of the transaction.
-     * @param imageUrl      URL of the image stored in Firebase Storage.
-     * @param location      Location of the transaction.
-     */
+    // 🔹 Full constructor
     public TransactionModel(String id, String category, String type, String description, String paymentMethod,
                             double amount, long date, String imageUrl, String location) {
         this.id = id;
@@ -47,6 +31,20 @@ public class TransactionModel {
         this.date = date;
         this.imageUrl = imageUrl;
         this.location = location;
+    }
+
+    // 🔹 NEW: Simplified constructor for use in HomeFragment when adding a transaction
+    public TransactionModel(String id, double amount, String description, String category,
+                            String paymentMethod, String type, Timestamp timestamp) {
+        this.id = id;
+        this.amount = amount;
+        this.description = description;
+        this.category = category;
+        this.paymentMethod = paymentMethod;
+        this.type = type;
+        this.date = timestamp.toDate().getTime(); // convert Timestamp to long
+        this.imageUrl = null;
+        this.location = null;
     }
 
     // Getters and Setters
@@ -103,7 +101,6 @@ public class TransactionModel {
         }
     }
 
-
     public String getImageUrl() {
         return imageUrl;
     }
@@ -146,6 +143,4 @@ public class TransactionModel {
                 ", imageUrl='" + imageUrl + '\'' +
                 '}';
     }
-
-
 }

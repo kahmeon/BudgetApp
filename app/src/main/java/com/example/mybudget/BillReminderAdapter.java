@@ -3,30 +3,35 @@ package com.example.mybudget;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class BillReminderAdapter extends RecyclerView.Adapter<BillReminderAdapter.ViewHolder> {
-    private List<BillReminder> billList;
 
+    private final List<BillReminder> billList;
+    private OnBillDeleteClickListener deleteClickListener;
+
+    // Constructor
     public BillReminderAdapter(List<BillReminder> bills) {
         this.billList = bills;
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView nameView, dateView;
-        public ViewHolder(View itemView) {
-            super(itemView);
-            nameView = itemView.findViewById(R.id.tv_bill_name);
-            dateView = itemView.findViewById(R.id.tv_bill_date);
+    // Interface for delete click callback
+    public interface OnBillDeleteClickListener {
+        void onDelete(BillReminder bill, int position);
+    }
 
-        }
+    public void setOnBillDeleteClickListener(OnBillDeleteClickListener listener) {
+        this.deleteClickListener = listener;
     }
 
     @NonNull
@@ -40,12 +45,43 @@ public class BillReminderAdapter extends RecyclerView.Adapter<BillReminderAdapte
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         BillReminder bill = billList.get(position);
+
         holder.nameView.setText(bill.getName());
-        holder.dateView.setText(new SimpleDateFormat("dd MMM yyyy").format(new Date(bill.getDueDateMillis())));
+
+        // ✅ Format and set the amount
+        String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("en", "MY")).format(bill.getAmount());
+        holder.amountView.setText(formattedAmount);
+
+        // Format and set the due date
+        String dateFormatted = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+                .format(new Date(bill.getDueDateMillis()));
+        holder.dateView.setText(dateFormatted);
+
+        // Delete click
+        holder.deleteBtn.setOnClickListener(v -> {
+            int adapterPosition = holder.getAdapterPosition();
+            if (deleteClickListener != null && adapterPosition != RecyclerView.NO_POSITION) {
+                deleteClickListener.onDelete(billList.get(adapterPosition), adapterPosition);
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
         return billList.size();
+    }
+
+    // Inner ViewHolder class
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView nameView, dateView, amountView;
+        ImageButton deleteBtn;
+
+        public ViewHolder(View itemView) {
+            super(itemView);
+            nameView = itemView.findViewById(R.id.tv_bill_name);
+            dateView = itemView.findViewById(R.id.tv_bill_date);
+            amountView = itemView.findViewById(R.id.tv_bill_amount);  // ✅ Make sure this ID exists in item_bill.xml
+            deleteBtn = itemView.findViewById(R.id.btn_delete_bill);
+        }
     }
 }

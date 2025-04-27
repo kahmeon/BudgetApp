@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardElevation="2dp"
-        app:shapeAppearance="@style/ShapeAppearance.Material3.Small.Component"
+        app:shapeAppearance="@style/CustomCardShape"
         app:strokeColor="?attr/colorOutline"
         app:strokeWidth="1dp">
 
@@ -35,7 +35,7 @@
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:src="@drawable/ic_add_circle"
-                    app:shapeAppearance="?attr/cornerCircle"
+                    app:shapeAppearance="@style/CustomCardShape"
                     app:tint="?attr/colorPrimary"
                     android:background="?attr/colorPrimaryContainer"
                     android:padding="4dp"/>
@@ -113,6 +113,7 @@
                     android:layout_height="48dp"
                     android:layout_weight="1"
                     android:text="Select date"
+                    android:textColor="@android:color/black"
                     app:icon="@drawable/ic_calendar_today"
                     app:iconTint="?attr/colorPrimary"
                     app:strokeColor="?attr/colorOutline"/>
@@ -124,6 +125,7 @@
                     android:layout_height="48dp"
                     android:layout_weight="1"
                     android:text="Select time"
+                    android:textColor="@android:color/black"
                     app:icon="@drawable/ic_access_time"
                     app:iconTint="?attr/colorPrimary"
                     app:strokeColor="?attr/colorOutline"/>
@@ -138,16 +140,6 @@
                 android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                 android:textColor="?attr/colorOnSurfaceVariant"/>
 
-            <!-- Save Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_save_bill"
-                style="@style/Widget.Material3.Button"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="24dp"
-                android:text="Save Bill Reminder"
-                app:icon="@drawable/ic_save"
-                app:iconTint="@android:color/white"/>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 </LinearLayout>

@@ -30,6 +30,10 @@ public class SettingsFragment extends Fragment {
         LinearLayout openBudgetButton = view.findViewById(R.id.openBudgetButton);
         openBudgetButton.setOnClickListener(v -> openBudget());
 
+        LinearLayout openCurrencyConverterButton = view.findViewById(R.id.openCurrencyConverterButton);
+        openCurrencyConverterButton.setOnClickListener(v -> openCurrencyConverter());
+
+
         LinearLayout openFeedbackButton = view.findViewById(R.id.openFeedbackButton);
         openFeedbackButton.setOnClickListener(v -> openFeedback());
 
@@ -62,6 +66,12 @@ public class SettingsFragment extends Fragment {
         Intent intent = new Intent(getActivity(), BudgetActivity.class);
         startActivity(intent);
     }
+
+    private void openCurrencyConverter() {
+        Intent intent = new Intent(getActivity(), RealtimeCurrencyActivity.class);
+        startActivity(intent);
+    }
+
 
     private void openSavingGoals() {
         Intent intent = new Intent(getActivity(), SavingGoalsActivity.class);

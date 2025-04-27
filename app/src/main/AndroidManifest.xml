@@ -8,11 +8,10 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
-
-
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <application
+        android:name=".MyBudgetApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -38,7 +37,7 @@
             android:name=".MainActivity"
             android:exported="true" />
 
-        <!-- Login Activity -->
+        <!-- Login Activity (Launcher) -->
         <activity
             android:name=".LoginActivity"
             android:exported="true">
@@ -56,43 +55,67 @@
         <!-- Financial Calculators -->
         <activity
             android:name=".Calculator"
-            android:exported="false" />
+            android:exported="false"
+            android:launchMode="singleTop" />
         <activity
             android:name=".AmortizationSchedule"
-            android:exported="false" />
+            android:exported="false"
+            android:launchMode="singleTop" />
         <activity
             android:name=".housingloan"
-            android:exported="false" />
+            android:exported="false"
+            android:launchMode="singleTop" />
         <activity
             android:name=".personalloan"
-            android:exported="false" />
+            android:exported="false"
+            android:launchMode="singleTop" />
 
         <!-- Setup Profile Activity -->
         <activity
             android:name=".SetupProfileActivity"
             android:exported="true" />
 
-        <activity android:name=".AddCategoryActivity" />
-
+        <!-- Add Category -->
+        <activity
+            android:name=".AddCategoryActivity"
+            android:exported="false" />
 
         <!-- Budget Management -->
         <activity
             android:name=".BudgetActivity"
             android:exported="false" />
 
-        <!-- ✅ Saving Goals Activity -->
+        <!-- Saving Goals -->
         <activity
             android:name=".SavingGoalsActivity"
             android:exported="false" />
-        <receiver android:name=".ReminderReceiver" />
 
-        <activity android:name=".NotificationSettingsActivity" />
-        <receiver android:name=".BootReceiver" android:exported="true">
+        <!-- Currency Converter -->
+        <activity
+            android:name=".RealtimeCurrencyActivity"
+            android:exported="false"
+            android:launchMode="singleTop" />
+
+        <!-- Notifications -->
+        <activity
+            android:name=".NotificationSettingsActivity"
+            android:exported="false" />
+
+        <!-- Reminder Receivers -->
+        <receiver
+            android:name=".ReminderReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".BillReminderReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".BillReminderReceiver" android:exported="false"/>
 
     </application>
+
 </manifest>

@@ -59,6 +59,7 @@ public class NotificationSettingsActivity extends AppCompatActivity {
     private static final String KEY_BILL_ENABLED = "bill_enabled";
 
     private static final String CHANNEL_ID = "daily_reminder_channel";
+    private static final String KEY_ALL_NOTIFICATIONS_ENABLED = "all_notifications_enabled";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,14 +88,21 @@ public class NotificationSettingsActivity extends AppCompatActivity {
 
         loadSavedReminderTime();
         createNotificationChannel();
+        loadSavedBillReminders();
 
         btnPickTime.setOnClickListener(v -> showTimePicker());
         btnPreviewNotification.setOnClickListener(v -> showTestNotification());
-
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        boolean allEnabled = prefs.getBoolean(KEY_ALL_NOTIFICATIONS_ENABLED, true);
+        updateNotificationSectionsVisibility(allEnabled);
 
+        switchAllNotifications.setChecked(prefs.getBoolean(KEY_ALL_NOTIFICATIONS_ENABLED, true));
         switchDailyReminder.setChecked(prefs.getBoolean(KEY_DAILY_ENABLED, true));
         switchBillReminder.setChecked(prefs.getBoolean(KEY_BILL_ENABLED, false));
+        switchAllNotifications.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            prefs.edit().putBoolean(KEY_ALL_NOTIFICATIONS_ENABLED, isChecked).apply();
+            updateNotificationSectionsVisibility(isChecked);
+        });
 
         if (switchDailyReminder.isChecked()) {
             dailyReminderTimeContainer.setVisibility(View.VISIBLE);
@@ -140,8 +148,9 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         });
         if (switchBillReminder.isChecked()) {
             billReminderSettingsContainer.setVisibility(View.VISIBLE);
+            scheduleBillReminder();
+            loadSavedBillReminders();
         }
-
 
 
 
@@ -159,38 +168,23 @@ public class NotificationSettingsActivity extends AppCompatActivity {
             billReminderSettingsContainer.setVisibility(View.VISIBLE);
             scheduleBillReminder();
         }
+        adapter.setOnBillDeleteClickListener((bill, position) -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("Delete Reminder")
+                    .setMessage("Are you sure you want to delete this bill reminder?")
+                    .setPositiveButton("Delete", (dialog, which) -> {
+                        deleteBillReminder(bill, position);
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        });
+
+        LinearLayout dailySection = findViewById(R.id.daily_reminder_time_container);
+        LinearLayout billSection = findViewById(R.id.bill_reminder_settings_container);
 
     }
 
-    private void saveBillReminder() {
-        EditText nameInput = findViewById(R.id.et_bill_name);
-        EditText amountInput = findViewById(R.id.et_bill_amount);
-        TextView dateText = findViewById(R.id.tv_selected_date);
 
-        String name = nameInput.getText().toString().trim();
-        String amountText = amountInput.getText().toString().trim();
-
-        if (name.isEmpty() || amountText.isEmpty() || selectedDate == null) {
-            Toast.makeText(this, "Please complete all fields", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        double amount = Double.parseDouble(amountText);
-        long dueDateMillis = selectedDate.getTimeInMillis();
-
-        BillReminder bill = new BillReminder(name, amount, dueDateMillis);
-        billList.add(bill);
-        adapter.notifyItemInserted(billList.size() - 1);
-
-
-
-        scheduleIndividualBillReminder(bill, billList.size() - 1);
-
-        // Optional: Clear inputs
-        nameInput.setText("");
-        amountInput.setText("");
-        dateText.setText("No date selected");
-    }
 
     private void scheduleIndividualBillReminder(BillReminder bill, int requestCode) {
         Intent intent = new Intent(this, BillReminderReceiver.class);
@@ -219,6 +213,8 @@ public class NotificationSettingsActivity extends AppCompatActivity {
             Toast.makeText(this, "Daily reminder cancelled", Toast.LENGTH_SHORT).show();
         }
     }
+
+
 
     private void showTimePicker() {
         int hour = reminderTime.get(Calendar.HOUR_OF_DAY);
@@ -261,6 +257,39 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         String timeText = String.format("%02d:%02d", hour, minute);
         tvSelectedTime.setText(timeText);
     }
+
+    private void loadSavedBillReminders() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) return;
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("users")
+                .document(user.getUid())
+                .collection("billReminders")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    billList.clear(); // Important: clear old items
+                    for (var doc : querySnapshot.getDocuments()) {
+                        String name = doc.getString("name");
+                        Double amount = doc.getDouble("amount"); // use Double to prevent NPE
+                        Long dueDateMillis = doc.getLong("dueDateMillis");
+
+                        if (name != null && amount != null && dueDateMillis != null) {
+                            BillReminder bill = new BillReminder(name, amount, dueDateMillis);
+                            billList.add(bill);
+                        }
+                    }
+                    adapter.notifyDataSetChanged();
+
+                    tvEmptyState.setVisibility(billList.isEmpty() ? View.VISIBLE : View.GONE);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore", "Failed to load bills", e);
+                    Toast.makeText(this, "Error loading reminders", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+
 
     private void scheduleDailyReminder() {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
@@ -319,6 +348,33 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         }
     }
 
+    private void updateNotificationSectionsVisibility(boolean notificationsEnabled) {
+        LinearLayout dailyReminderContainer = findViewById(R.id.daily_reminder_container); // Add this ID in XML
+        LinearLayout billReminderContainer = findViewById(R.id.bill_reminder_container);   // Add this ID in XML
+
+        dailyReminderContainer.setVisibility(notificationsEnabled ? View.VISIBLE : View.GONE);
+        billReminderContainer.setVisibility(notificationsEnabled ? View.VISIBLE : View.GONE);
+
+        if (!notificationsEnabled) {
+            switchDailyReminder.setChecked(false);
+            switchBillReminder.setChecked(false);
+            dailyReminderTimeContainer.setVisibility(View.GONE);
+            findViewById(R.id.bill_reminder_settings_container).setVisibility(View.GONE);
+            cancelDailyReminder();
+            cancelBillReminder();
+        } else {
+            if (switchDailyReminder.isChecked()) {
+                dailyReminderTimeContainer.setVisibility(View.VISIBLE);
+                scheduleDailyReminder();
+            }
+            if (switchBillReminder.isChecked()) {
+                findViewById(R.id.bill_reminder_settings_container).setVisibility(View.VISIBLE);
+                scheduleBillReminder();
+            }
+        }
+    }
+
+
     private void showTestNotification() {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notifications)
@@ -361,9 +417,11 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         EditText nameInput = dialogView.findViewById(R.id.et_bill_name);
         EditText amountInput = dialogView.findViewById(R.id.et_bill_amount);
         Button pickDateBtn = dialogView.findViewById(R.id.btn_pick_date);
-        TextView selectedDateView = dialogView.findViewById(R.id.tv_selected_date);
+        Button pickTimeBtn = dialogView.findViewById(R.id.btn_pick_time);
+        TextView selectedDateView = dialogView.findViewById(R.id.tv_selected_datetime);
 
         selectedDate = Calendar.getInstance();
+        updateSelectedDateTimeView(selectedDateView); // Show default time
 
         pickDateBtn.setOnClickListener(v -> {
             int year = selectedDate.get(Calendar.YEAR);
@@ -372,8 +430,19 @@ public class NotificationSettingsActivity extends AppCompatActivity {
 
             new DatePickerDialog(this, (view, y, m, d) -> {
                 selectedDate.set(y, m, d);
-                selectedDateView.setText(String.format("%02d/%02d/%04d", d, m + 1, y));
+                updateSelectedDateTimeView(selectedDateView);
             }, year, month, day).show();
+        });
+
+        pickTimeBtn.setOnClickListener(v -> {
+            int hour = selectedDate.get(Calendar.HOUR_OF_DAY);
+            int minute = selectedDate.get(Calendar.MINUTE);
+
+            new TimePickerDialog(this, (view, h, m) -> {
+                selectedDate.set(Calendar.HOUR_OF_DAY, h);
+                selectedDate.set(Calendar.MINUTE, m);
+                updateSelectedDateTimeView(selectedDateView);
+            }, hour, minute, true).show();
         });
 
         AlertDialog dialog = new AlertDialog.Builder(this)
@@ -395,6 +464,14 @@ public class NotificationSettingsActivity extends AppCompatActivity {
                 return;
             }
 
+            // ✅ Prevent duplicate bill names
+            for (BillReminder existing : billList) {
+                if (existing.getName().equalsIgnoreCase(name)) {
+                    Toast.makeText(this, "A bill with this name already exists.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+
             double amount = Double.parseDouble(amountText);
             long dueDate = selectedDate.getTimeInMillis();
 
@@ -402,47 +479,69 @@ public class NotificationSettingsActivity extends AppCompatActivity {
             billList.add(bill);
             adapter.notifyItemInserted(billList.size() - 1);
 
-            // ✅ Schedule the reminder
             scheduleIndividualBillReminder(bill, billList.size());
 
-            // ✅ Hide empty state
             if (!billList.isEmpty()) {
                 tvEmptyState.setVisibility(View.GONE);
             }
 
             // ✅ Save to Firestore
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
             if (user == null) {
-                Log.e("Firestore", "User is not signed in!");
                 Toast.makeText(this, "You must be signed in to save reminders", Toast.LENGTH_LONG).show();
                 return;
             }
 
-            String userId = user.getUid();
-            Log.d("Firestore", "Saving bill for user: " + userId);
-
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
             Map<String, Object> billData = new HashMap<>();
-            billData.put("name", bill.getName());
-            billData.put("amount", bill.getAmount());
-            billData.put("dueDateMillis", bill.getDueDateMillis());
+            billData.put("name", name);
+            billData.put("amount", amount);
+            billData.put("dueDateMillis", dueDate);
 
             db.collection("users")
-                    .document(userId)
+                    .document(user.getUid())
                     .collection("billReminders")
                     .add(billData)
-                    .addOnSuccessListener(docRef -> {
-                        Log.d("Firestore", "Bill reminder saved successfully.");
-                        Toast.makeText(this, "Bill saved!", Toast.LENGTH_SHORT).show();
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("Firestore", "Error saving bill", e);
-                        Toast.makeText(this, "Error saving bill: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    });
+                    .addOnSuccessListener(docRef -> Toast.makeText(this, "Bill saved!", Toast.LENGTH_SHORT).show())
+                    .addOnFailureListener(e -> Toast.makeText(this, "Error saving bill: " + e.getMessage(), Toast.LENGTH_LONG).show());
 
             dialog.dismiss();
         });
+
+    }
+    private void updateSelectedDateTimeView(TextView textView) {
+        java.text.DateFormat format = java.text.DateFormat.getDateTimeInstance();
+        textView.setText(format.format(selectedDate.getTime()));
+    }
+
+    public interface OnBillDeleteClickListener {
+        void onDelete(BillReminder bill, int position);
+    }
+    private void deleteBillReminder(BillReminder bill, int position) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) return;
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("users")
+                .document(user.getUid())
+                .collection("billReminders")
+                .whereEqualTo("name", bill.getName())
+                .whereEqualTo("dueDateMillis", bill.getDueDateMillis())
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    for (var doc : snapshot.getDocuments()) {
+                        doc.getReference().delete();
+                    }
+                    billList.remove(position);
+                    adapter.notifyItemRemoved(position);
+
+                    if (billList.isEmpty()) {
+                        tvEmptyState.setVisibility(View.VISIBLE);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to delete: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
 }

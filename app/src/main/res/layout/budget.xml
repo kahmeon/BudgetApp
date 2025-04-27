@@ -4,25 +4,28 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/light_gray_background">
+    android:background="?attr/colorSurfaceVariant"
+    tools:context=".BudgetActivity">
 
+    <!-- AppBar with modern Material3 toolbar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        android:background="@color/colorPrimary">
+        android:theme="@style/ThemeOverlay.MaterialComponents.Light"
+        android:background="@color/buttonPrimary">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Monthly Budget"
-            app:titleTextColor="@android:color/white"
+            android:title="Monthly Budget"
+            app:titleCentered="true"
+            app:titleTextColor="@color/black"
             app:navigationIcon="@drawable/ic_arrow_back"
-            app:layout_scrollFlags="scroll|enterAlways"/>
-
+            app:layout_scrollFlags="scroll|enterAlways" />
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- Scrollable content -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -34,7 +37,7 @@
             android:layout_height="wrap_content"
             android:padding="16dp">
 
-            <!-- Current Budget Display -->
+            <!-- Budget Summary -->
             <TextView
                 android:id="@+id/current_budget"
                 android:layout_width="match_parent"
@@ -42,17 +45,17 @@
                 android:text="No budget set"
                 android:textSize="18sp"
                 android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
                 android:layout_marginBottom="16dp"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
+                app:layout_constraintStart_toStartOf="parent" />
 
-            <!-- Budget Overview Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/budget_summary_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
                 app:layout_constraintTop_toBottomOf="@id/current_budget"
                 app:layout_constraintStart_toStartOf="parent"
@@ -70,7 +73,7 @@
                         android:text="Monthly Overview"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="@color/colorPrimary"/>
+                        android:textColor="?attr/colorPrimary" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -89,7 +92,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="Total Budget"
                                 android:textSize="14sp"
-                                android:textColor="@color/text_secondary"/>
+                                android:textColor="?attr/colorOnSurfaceVariant" />
 
                             <TextView
                                 android:id="@+id/total_budget"
@@ -98,7 +101,7 @@
                                 android:text="RM 0"
                                 android:textSize="20sp"
                                 android:textStyle="bold"
-                                android:layout_marginTop="4dp"/>
+                                android:layout_marginTop="4dp" />
                         </LinearLayout>
 
                         <LinearLayout
@@ -112,7 +115,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="Total Spent"
                                 android:textSize="14sp"
-                                android:textColor="@color/text_secondary"/>
+                                android:textColor="?attr/colorOnSurfaceVariant" />
 
                             <TextView
                                 android:id="@+id/total_spent"
@@ -121,17 +124,17 @@
                                 android:text="RM 0"
                                 android:textSize="20sp"
                                 android:textStyle="bold"
-                                android:layout_marginTop="4dp"/>
+                                android:layout_marginTop="4dp" />
                         </LinearLayout>
                     </LinearLayout>
 
                     <ProgressBar
                         android:id="@+id/budget_progress"
-                        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                        style="?android:attr/progressBarStyleHorizontal"
                         android:layout_width="match_parent"
                         android:layout_height="8dp"
                         android:layout_marginTop="16dp"
-                        android:progressTint="@color/colorPrimary"/>
+                        android:progressTint="?attr/colorPrimary" />
 
                     <TextView
                         android:id="@+id/budget_progress_text"
@@ -140,18 +143,19 @@
                         android:text="0% of budget used"
                         android:textSize="12sp"
                         android:layout_marginTop="4dp"
-                        android:layout_gravity="end"/>
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_gravity="end" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Budget Input Section (Hidden by default) -->
+            <!-- Input Budget (Initially Hidden) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/input_budget_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:visibility="gone"
-                app:cardCornerRadius="8dp"
+                app:cardCornerRadius="12dp"
                 app:cardElevation="2dp"
                 app:layout_constraintTop_toBottomOf="@id/budget_summary_card"
                 app:layout_constraintStart_toStartOf="parent"
@@ -172,21 +176,21 @@
                             android:id="@+id/budget_input"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:inputType="numberDecimal"/>
+                            android:inputType="numberDecimal" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <Button
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/save_budget_button"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
                         android:text="Save Budget"
+                        android:layout_marginTop="8dp"
                         android:textColor="@android:color/white"
-                        app:backgroundTint="@color/colorPrimary"/>
+                        app:backgroundTint="?attr/colorPrimary" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Budget Categories Section -->
+            <!-- Budget Categories -->
             <TextView
                 android:id="@+id/categories_title"
                 android:layout_width="wrap_content"
@@ -194,9 +198,10 @@
                 android:text="Budget Categories"
                 android:textSize="18sp"
                 android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
                 android:layout_marginTop="24dp"
                 app:layout_constraintTop_toBottomOf="@id/input_budget_layout"
-                app:layout_constraintStart_toStartOf="parent"/>
+                app:layout_constraintStart_toStartOf="parent" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/categories_recycler"
@@ -204,12 +209,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:clipToPadding="false"
-                android:paddingBottom="16dp"
+                android:paddingBottom="8dp"
                 app:layout_constraintTop_toBottomOf="@id/categories_title"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
+                app:layout_constraintEnd_toEndOf="parent" />
 
-            <!-- Budget History Section -->
+            <!-- Budget History -->
             <TextView
                 android:id="@+id/budget_history_title"
                 android:layout_width="wrap_content"
@@ -217,9 +222,10 @@
                 android:text="Budget History"
                 android:textSize="18sp"
                 android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
                 android:layout_marginTop="24dp"
                 app:layout_constraintTop_toBottomOf="@id/categories_recycler"
-                app:layout_constraintStart_toStartOf="parent"/>
+                app:layout_constraintStart_toStartOf="parent" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/budget_history_recycler"
@@ -230,35 +236,32 @@
                 android:paddingBottom="80dp"
                 app:layout_constraintTop_toBottomOf="@id/budget_history_title"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
+                app:layout_constraintEnd_toEndOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Add Category FAB -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/add_category_fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:contentDescription="Add category"
-        app:backgroundTint="@color/colorPrimary"
-        app:layout_anchor="@id/budget_summary_card"
-        app:layout_anchorGravity="bottom|right|end"
-        app:srcCompat="@drawable/ic_add_category"
-        app:tint="@android:color/white"/>
-
-    <!-- Set Budget FAB -->
+    <!-- Floating Action Buttons -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/set_budget_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="24dp"
         android:contentDescription="Set budget"
-        app:backgroundTint="@color/colorPrimary"
-        app:layout_anchor="@id/budget_summary_card"
-        app:layout_anchorGravity="bottom|left|start"
         app:srcCompat="@drawable/ic_add"
-        app:tint="@android:color/white"/>
+        app:backgroundTint="@color/buttonPrimary"
+        app:tint="@android:color/white" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/add_category_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="24dp"
+        android:contentDescription="Add category"
+        app:srcCompat="@drawable/ic_add_category"
+        app:backgroundTint="@color/buttonPrimary"
+        app:tint="@android:color/white" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

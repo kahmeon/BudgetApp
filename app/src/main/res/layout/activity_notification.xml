@@ -75,6 +75,7 @@
 
                 <!-- Daily Reminder Section -->
                 <LinearLayout
+                    android:id="@+id/daily_reminder_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
@@ -158,6 +159,7 @@
 
                 <!-- Bill Reminder Section -->
                 <LinearLayout
+                    android:id="@+id/bill_reminder_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"

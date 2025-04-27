@@ -40,8 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
             if (item.getItemId() == R.id.nav_dashboard) {
                 selectedFragment = new HomeFragment();
-            } else if (item.getItemId() == R.id.nav_transactions) {
-                selectedFragment = new TransactionsFragment();
+
             } else if (item.getItemId() == R.id.nav_wallets) {
                 selectedFragment = new WalletFragment();
             } else if (item.getItemId() == R.id.nav_reports) {

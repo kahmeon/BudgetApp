@@ -19,7 +19,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
 
     // Interface for Edit and Delete actions
     public interface OnCategoryActionListener {
-        void onEdit(CategoryModel category);
+
         void onDelete(CategoryModel category);
     }
 
@@ -43,7 +43,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         holder.nameText.setText(category.getName());
         holder.typeText.setText(category.getType());
 
-        holder.editButton.setOnClickListener(v -> listener.onEdit(category));
+
         holder.deleteButton.setOnClickListener(v -> listener.onDelete(category));
     }
 
@@ -60,7 +60,6 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
             super(itemView);
             nameText = itemView.findViewById(R.id.category_name);
             typeText = itemView.findViewById(R.id.category_type);
-            editButton = itemView.findViewById(R.id.edit_button);
             deleteButton = itemView.findViewById(R.id.delete_button);
         }
     }

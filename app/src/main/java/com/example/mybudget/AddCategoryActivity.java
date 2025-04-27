@@ -59,11 +59,7 @@ public class AddCategoryActivity extends AppCompatActivity {
         // RecyclerView setup
         categoriesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         categoryAdapter = new CategoryAdapter(categoryList, new CategoryAdapter.OnCategoryActionListener() {
-            @Override
-            public void onEdit(CategoryModel category) {
-                // Placeholder for future edit functionality
-                Toast.makeText(AddCategoryActivity.this, "Edit " + category.getName(), Toast.LENGTH_SHORT).show();
-            }
+
 
             @Override
             public void onDelete(CategoryModel category) {

@@ -29,7 +29,7 @@ public class BillReminderReceiver extends BroadcastReceiver {
             billName = "a bill";
         }
 
-        // Create notification channel if needed
+        // 1. Create notification channel (Android O+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
@@ -43,7 +43,7 @@ public class BillReminderReceiver extends BroadcastReceiver {
             }
         }
 
-        // Build and show the notification
+        // 2. Show the notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notifications)
                 .setContentTitle("Bill Reminder")
@@ -54,24 +54,24 @@ public class BillReminderReceiver extends BroadcastReceiver {
         NotificationManager notificationManager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (notificationManager != null) {
-            int notificationId = (int) System.currentTimeMillis();
+            int notificationId = (int) System.currentTimeMillis(); // unique ID
             notificationManager.notify(notificationId, builder.build());
         }
 
-        // Schedule the next reminder for the same day next month
+        // 3. Reschedule for the same date next month
         if (currentMillis > 0) {
             Calendar nextReminder = Calendar.getInstance();
             nextReminder.setTimeInMillis(currentMillis);
-            nextReminder.add(Calendar.MONTH, 1);
+            nextReminder.add(Calendar.MONTH, 1); // ⏳ shift to next month
 
             Intent nextIntent = new Intent(context, BillReminderReceiver.class);
             nextIntent.putExtra("bill_name", billName);
             nextIntent.putExtra("due_date", nextReminder.getTimeInMillis());
             nextIntent.putExtra("request_code", requestCode);
 
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(
+            PendingIntent nextPendingIntent = PendingIntent.getBroadcast(
                     context,
-                    100 + requestCode,
+                    100 + requestCode, // keep request code consistent
                     nextIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
             );
@@ -81,7 +81,7 @@ public class BillReminderReceiver extends BroadcastReceiver {
                 alarmManager.setExactAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
                         nextReminder.getTimeInMillis(),
-                        pendingIntent
+                        nextPendingIntent
                 );
             }
         }
