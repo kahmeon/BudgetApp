@@ -1,155 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
     android:background="?attr/colorSurface"
     tools:context=".ReportsFragment">
 
+    <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar_reports"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:title="Reports"
-        android:titleTextColor="?attr/colorOnSurface"
-        android:background="?attr/colorSurface"
-        android:elevation="4dp"
         app:titleCentered="true"
-        app:layout_scrollFlags="scroll|enterAlways" />
+        android:background="?attr/colorSurface"
+        android:titleTextColor="?attr/colorOnSurface"
+        android:elevation="4dp" />
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/nested_scroll"
+    <!-- Date Selection Layout -->
+    <LinearLayout
+        android:id="@+id/date_selection_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:layout_marginTop="?attr/actionBarSize">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_marginTop="12dp">
+
+        <TextView
+            android:id="@+id/text_view_date_range"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Date Range"
+            android:gravity="center"
+            android:padding="12dp"
+            android:textSize="16sp"
+            android:textColor="?attr/colorPrimary" />
+
+        <Spinner
+            android:id="@+id/spinner_month"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:visibility="gone" />
+
+        <Spinner
+            android:id="@+id/spinner_year"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <!-- Tabs for Expenses / Revenue / All -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="2dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:orientation="horizontal"
+            android:weightSum="3">
 
-            <!-- Date Selection -->
-            <LinearLayout
-                android:id="@+id/date_selection_layout"
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/tab_expense"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone"
-                android:layout_marginBottom="16dp">
+                android:layout_weight="1"
+                android:padding="12dp"
+                android:text="Spendings"
+                android:textAlignment="center"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:background="@drawable/rounded_blue_bg" />
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:cardElevation="2dp"
-                    app:cardCornerRadius="16dp">
-
-                    <TextView
-                        android:id="@+id/text_view_date_range"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Select Weekly Date Range"
-                        android:textSize="16sp"
-                        android:gravity="center"
-                        android:padding="16dp"
-                        android:textColor="?attr/colorPrimary" />
-                </com.google.android.material.card.MaterialCardView>
-
-                <Spinner
-                    android:id="@+id/spinner_month"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone"
-                    android:layout_marginTop="8dp" />
-
-                <Spinner
-                    android:id="@+id/spinner_year"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone"
-                    android:layout_marginTop="8dp" />
-            </LinearLayout>
-
-            <!-- Tabs for Expenses / Revenue / All -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/tab_revenue"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp">
+                android:layout_weight="1"
+                android:padding="12dp"
+                android:text="Earnings"
+                android:textAlignment="center"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:background="@drawable/rounded_green_bg" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:weightSum="3">
-
-                    <TextView
-                        android:id="@+id/tab_expense"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="12dp"
-                        android:text="Spendings"
-                        android:textAlignment="center"
-                        android:textStyle="bold"
-                        android:textColor="@color/white"
-                        android:background="@drawable/rounded_blue_bg" />
-
-                    <TextView
-                        android:id="@+id/tab_revenue"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="12dp"
-                        android:text="Earnings"
-                        android:textAlignment="center"
-                        android:textStyle="bold"
-                        android:textColor="@color/white"
-                        android:background="@drawable/rounded_green_bg" />
-
-                    <TextView
-                        android:id="@+id/tab_expenses_revenue"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="12dp"
-                        android:text="All "
-                        android:textAlignment="center"
-                        android:textStyle="bold"
-                        android:textColor="@color/white"
-                        android:background="@drawable/rounded_orange_bg" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Chart -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/tab_expenses_revenue"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp">
-
-                <com.github.mikephil.charting.charts.PieChart
-                    android:id="@+id/pie_chart"
-                    android:layout_width="match_parent"
-                    android:layout_height="250dp"
-                    android:padding="16dp" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Report Recycler -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_view_reports"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:background="@color/white"
-                android:padding="8dp"
-                tools:listitem="@layout/item_expense" />
+                android:layout_weight="1"
+                android:padding="12dp"
+                android:text="All"
+                android:textAlignment="center"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:background="@drawable/rounded_orange_bg" />
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+    </com.google.android.material.card.MaterialCardView>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    <!-- Chart -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="2dp">
+
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/pie_chart"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:padding="16dp" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Scrollable transaction list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_reports"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="16dp"
+        android:background="@android:color/white"
+        android:padding="8dp"
+        android:clipToPadding="false"
+        android:overScrollMode="always"
+        tools:listitem="@layout/item_expense" />
+
+</LinearLayout>

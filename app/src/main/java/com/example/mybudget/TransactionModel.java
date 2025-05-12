@@ -1,11 +1,13 @@
 package com.example.mybudget;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import com.google.firebase.Timestamp;
 
 /**
  * Model class for representing a transaction in the budget app.
  */
-public class TransactionModel {
+public class TransactionModel implements Parcelable {
     private double amount;
     private String category;
     private String paymentMethod;
@@ -33,7 +35,7 @@ public class TransactionModel {
         this.location = location;
     }
 
-    // 🔹 NEW: Simplified constructor for use in HomeFragment when adding a transaction
+    // 🔹 Constructor for HomeFragment
     public TransactionModel(String id, double amount, String description, String category,
                             String paymentMethod, String type, Timestamp timestamp) {
         this.id = id;
@@ -47,52 +49,66 @@ public class TransactionModel {
         this.location = null;
     }
 
+    // 🔹 Parcelable constructor
+    protected TransactionModel(Parcel in) {
+        amount = in.readDouble();
+        category = in.readString();
+        paymentMethod = in.readString();
+        type = in.readString();
+        description = in.readString();
+        date = in.readLong();
+        imageUrl = in.readString();
+        location = in.readString();
+        id = in.readString();
+    }
+
+    public static final Creator<TransactionModel> CREATOR = new Creator<TransactionModel>() {
+        @Override
+        public TransactionModel createFromParcel(Parcel in) {
+            return new TransactionModel(in);
+        }
+
+        @Override
+        public TransactionModel[] newArray(int size) {
+            return new TransactionModel[size];
+        }
+    };
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeDouble(amount);
+        dest.writeString(category);
+        dest.writeString(paymentMethod);
+        dest.writeString(type);
+        dest.writeString(description);
+        dest.writeLong(date);
+        dest.writeString(imageUrl);
+        dest.writeString(location);
+        dest.writeString(id);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
     // Getters and Setters
+    public double getAmount() { return amount; }
+    public void setAmount(double amount) { this.amount = amount; }
 
-    public double getAmount() {
-        return amount;
-    }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
 
-    public void setAmount(double amount) {
-        this.amount = amount;
-    }
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
 
-    public String getCategory() {
-        return category;
-    }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 
-    public void setCategory(String category) {
-        this.category = category;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public String getPaymentMethod() {
-        return paymentMethod;
-    }
-
-    public void setPaymentMethod(String paymentMethod) {
-        this.paymentMethod = paymentMethod;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public long getDate() {
-        return date;
-    }
-
+    public long getDate() { return date; }
     public void setDate(Object date) {
         if (date instanceof Timestamp) {
             this.date = ((Timestamp) date).toDate().getTime();
@@ -101,33 +117,15 @@ public class TransactionModel {
         }
     }
 
-    public String getImageUrl() {
-        return imageUrl;
-    }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public boolean hasImage() { return imageUrl != null && !imageUrl.isEmpty(); }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
 
-    public boolean hasImage() {
-        return imageUrl != null && !imageUrl.isEmpty();
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     @Override
     public String toString() {

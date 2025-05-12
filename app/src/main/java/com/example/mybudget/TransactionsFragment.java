@@ -1,5 +1,6 @@
 package com.example.mybudget;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Context;
@@ -71,6 +72,7 @@ public class TransactionsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_transactions, container, false);
+        tvCurrentBalance = view.findViewById(R.id.tv_current_balance);
 
         firestore = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
@@ -81,10 +83,11 @@ public class TransactionsFragment extends Fragment {
         tvTotalIncome = view.findViewById(R.id.tv_total_income);
         tvTotalExpense = view.findViewById(R.id.tv_total_expense);
 
-        RecyclerView rvTransactions = view.findViewById(R.id.rv_transactions);
+
         // RecyclerView setup
         rvTransactions.setLayoutManager(new LinearLayoutManager(getContext()));
-        transactionsAdapter = new TransactionsAdapter(transactionsList);
+        transactionsAdapter = new TransactionsAdapter(new ArrayList<>());
+
         rvTransactions.setAdapter(transactionsAdapter);
 
 
@@ -177,7 +180,7 @@ public class TransactionsFragment extends Fragment {
     public static TransactionsFragment newInstance(ArrayList<TransactionModel> transactions) {
         TransactionsFragment fragment = new TransactionsFragment();
         Bundle args = new Bundle();
-        args.putSerializable(ARG_TRANSACTIONS, transactions);
+        args.putParcelableArrayList(ARG_TRANSACTIONS, transactions); // ✅ Correct if using Parcelable
         fragment.setArguments(args);
         return fragment;
     }
@@ -186,22 +189,41 @@ public class TransactionsFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null) {
-            transactionsList = (ArrayList<TransactionModel>) getArguments().getSerializable(ARG_TRANSACTIONS);
+        if (getArguments() != null && getArguments().containsKey(ARG_TRANSACTIONS)) {
+            ArrayList<TransactionModel> transactions =
+                    (ArrayList<TransactionModel>) getArguments().getSerializable(ARG_TRANSACTIONS);
+
+            if (transactions != null) {
+                transactionsList = transactions;
+            } else {
+                transactionsList = new ArrayList<>(); // fallback to empty
+            }
+        } else {
+            transactionsList = new ArrayList<>();
         }
     }
 
 
 
+
     private String getUserCurrencySymbol() {
-        SharedPreferences prefs = requireActivity().getSharedPreferences("userPrefs", Context.MODE_PRIVATE);
-        String currency = prefs.getString("currency", "USD"); // Default to USD if not set
+        Activity activity = getActivity();
+        SharedPreferences prefs = null;
+        if (activity != null) {
+            prefs = activity.getSharedPreferences("userPrefs", Context.MODE_PRIVATE);
+        }
+
+        String currency = prefs.getString("currency", "MYR"); // Default to USD if not set
 
         switch (currency) {
-            case "MYR": return "RM";
-            case "USD": return "$";
-            case "EUR": return "€";
-            default: return "$"; // Default fallback
+            case "MYR":
+                return "RM";
+            case "USD":
+                return "$";
+            case "EUR":
+                return "€";
+            default:
+                return "$"; // Default fallback
         }
     }
 
@@ -214,6 +236,7 @@ public class TransactionsFragment extends Fragment {
                 .orderBy("date", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!isAdded() || getContext() == null) return;
                     Set<String> loadedIds = new HashSet<>(); // 🔁 fix here
                     transactionsList.clear();
                     double totalIncome = 0, totalExpense = 0;
@@ -238,7 +261,7 @@ public class TransactionsFragment extends Fragment {
                         if ("Income".equals(transaction.getType())) totalIncome += transaction.getAmount();
                         else if ("Expense".equals(transaction.getType())) totalExpense += transaction.getAmount();
                     }
-
+                    transactionsAdapter.updateList(transactionsList);
                     transactionsAdapter.notifyDataSetChanged();
                     tvTotalIncome.setText(String.format("Income: %s%.2f", currencySymbol, totalIncome));
                     tvTotalExpense.setText(String.format("Expense: %s%.2f", currencySymbol, totalExpense));
@@ -401,24 +424,30 @@ public class TransactionsFragment extends Fragment {
             firestore.collection("users").document(userId).collection("transactions")
                     .add(transactionData)
                     .addOnCompleteListener(task -> {
-                        requireActivity().runOnUiThread(() -> {
-                            if (task.isSuccessful()) {
-                                Toast.makeText(getContext(), "Transaction added", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Log.e("AddTransaction", "Offline or failed: " + task.getException());
-                                Toast.makeText(getContext(), "Saved offline. Will sync when online.", Toast.LENGTH_SHORT).show();
+                        if (isAdded()) {
+                            requireActivity().runOnUiThread(() -> {
+                                if (task.isSuccessful()) {
+                                    Toast.makeText(getContext(), "Transaction added", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Log.e("AddTransaction", "Offline or failed: " + task.getException());
+                                    Toast.makeText(getContext(), "Saved offline. Will sync when online.", Toast.LENGTH_SHORT).show();
 
-                            }
-                            dialog.dismiss(); // ✅ Always close regardless of success or failure
-                            loadUserTransactions(); // ✅ Refresh list
-                        });
+                                }
+                                dialog.dismiss(); // ✅ Always close regardless of success or failure
+                                loadUserTransactions(); // ✅ Refresh list
+                            });
+                        }
                     });
+
         });
     }
 
         private void setCategoryOptions(Spinner spinnerCategory, boolean isIncome) {
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        String type = isIncome ? "Income" : "Expense";
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            if (user == null) return;
+            String userId = user.getUid();
+
+            String type = isIncome ? "Income" : "Expense";
 
         FirebaseFirestore.getInstance()
                 .collection("users")

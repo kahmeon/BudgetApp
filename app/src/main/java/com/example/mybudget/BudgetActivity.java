@@ -15,6 +15,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
@@ -58,18 +59,43 @@ public class BudgetActivity extends AppCompatActivity {
     private List<BudgetHistoryItem> historyItems = new ArrayList<>();
     private List<BudgetCategory> categories = new ArrayList<>();
     private int currentMonthlyBudget = 0;
-
+    SwipeRefreshLayout swipeRefreshLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.budget);
+        swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
 
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            // Refresh logic here, e.g., reload budget data
+            loadBudgetData();
+        });
         initializeViews();
         initializeFirebase();
         setupRecyclerViews();
         setupClickListeners();
         loadData();
     }
+    private void loadBudgetData() {
+        // 1. Reload monthly budget info and update UI
+        loadBudget();
+
+        // 2. Reload spending + progress bar
+        if (currentMonthlyBudget > 0) {
+            calculateSpendingAndUpdateProgress(currentMonthlyBudget);
+        }
+
+        // 3. Reload category spending
+        String monthKey = new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(new Date());
+        calculateSpendingPerCategoryForMonth(monthKey);
+
+        // 4. Reload budget history
+        loadBudgetHistory();
+
+        // 5. Stop the refresh animation
+        swipeRefreshLayout.setRefreshing(false);
+    }
+
 
     private void initializeViews() {
         currentBudget = findViewById(R.id.current_budget);
@@ -136,7 +162,13 @@ public class BudgetActivity extends AppCompatActivity {
         loadBudget();
         loadBudgetHistory();
         loadCategories();
+
+        // Add this to calculate category-wise expenses for current month
+        String monthKey = new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(new Date());
+        calculateSpendingPerCategoryForMonth(monthKey);
     }
+
+
 
     private void showBudgetInput() {
         findViewById(R.id.input_budget_layout).setVisibility(View.VISIBLE);
@@ -191,9 +223,15 @@ public class BudgetActivity extends AppCompatActivity {
                     hideBudgetInput();
                     showToast("Budget set: RM" + amount);
                     calculateSpendingAndUpdateProgress(amount);
+
+                    // 🔁 Automatically copy categories from last month
+                    String currentMonthKey = new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(new Date());
+                    String lastMonthKey = getLastMonthKey();
+                    autoCopyCategoriesFromLastMonth(lastMonthKey, currentMonthKey);
                 })
                 .addOnFailureListener(e -> showToast("Failed to set budget: " + e.getMessage()));
     }
+
 
     private void updateBudgetUI(int amount) {
         String month = new SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(new Date());
@@ -223,23 +261,55 @@ public class BudgetActivity extends AppCompatActivity {
             String currentMonth = new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(new Date());
 
             if (!storedMonth.equals(currentMonth)) {
-                archiveOldBudget(storedMonth);
+                // Archive and set new month
+                archiveOldBudget(storedMonth); // Save April to history
+                autoSetNewMonthlyBudget(documentSnapshot); // Carry over budget
+                String currentMonthKey = new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(new Date());
+                String lastMonthKey = getLastMonthKey();
+                autoCopyCategoriesFromLastMonth(lastMonthKey, currentMonthKey);
             } else {
-                calculateSpendingAndUpdateProgress(currentMonthlyBudget);
+                calculateSpendingAndUpdateProgress(currentMonthlyBudget); // Normal usage
             }
         }
     }
 
+    private String getLastMonthKey() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MONTH, -1);
+        return new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(cal.getTime());
+    }
+
+
+    private void autoSetNewMonthlyBudget(DocumentSnapshot oldDoc) {
+        final Long lastBudget = oldDoc.getLong("monthly_budget");
+        final int budgetAmount = lastBudget != null ? lastBudget.intValue() : 0;
+
+        Map<String, Object> newBudget = new HashMap<>();
+        newBudget.put("monthly_budget", budgetAmount);
+        newBudget.put("setAt", new Timestamp(new Date()));
+        Map<String, Object> existingCategories = oldDoc.contains("categories")
+                ? (Map<String, Object>) oldDoc.get("categories")
+                : new HashMap<>();
+
+        newBudget.put("categories", existingCategories);
+
+        getBudgetDocumentReference().set(newBudget)
+
+                .addOnSuccessListener(aVoid -> {
+                    currentMonthlyBudget = budgetAmount;
+                    updateBudgetUI(currentMonthlyBudget);
+                    showToast("New month started. Budget auto-set to RM " + currentMonthlyBudget);
+                    calculateSpendingAndUpdateProgress(currentMonthlyBudget);
+                })
+                .addOnFailureListener(e -> showToast("Failed to auto-set new budget"));
+    }
+
+
+
     private void archiveOldBudget(String monthKey) {
         calculateSpendingAndArchive(currentMonthlyBudget, monthKey);
-        getBudgetDocumentReference().delete()
-                .addOnSuccessListener(aVoid -> {
-                    currentMonthlyBudget = 0;
-                    updateBudgetUI(0);
-                    budgetProgress.setProgress(0);
-                    budgetProgressText.setText("0% of budget used");
-                    totalSpentText.setText("RM 0");
-                });
+        getBudgetDocumentReference().update("archived", true);
+
     }
 
 
@@ -277,11 +347,15 @@ public class BudgetActivity extends AppCompatActivity {
     }
 
     private void loadCategories() {
-        getBudgetDocumentReference().get()
+        db.collection("users")
+                .document(userId)
+                .collection("budget")
+                .document("monthly")
+                .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists() && documentSnapshot.contains("categories")) {
-                        Map<String, Object> categoriesMap = (Map<String, Object>) documentSnapshot.get("categories");
                         categories.clear();
+                        Map<String, Object> categoriesMap = (Map<String, Object>) documentSnapshot.get("categories");
                         for (Map.Entry<String, Object> entry : categoriesMap.entrySet()) {
                             if (entry.getValue() instanceof Map) {
                                 Map<String, Object> data = (Map<String, Object>) entry.getValue();
@@ -290,12 +364,13 @@ public class BudgetActivity extends AppCompatActivity {
                                 categories.add(new BudgetCategory(entry.getKey(), budget, spent));
                             }
                         }
-
                         categoryAdapter.notifyDataSetChanged();
+                    } else {
+                        showToast("No category data found for this month");
                     }
-                });
+                })
+                .addOnFailureListener(e -> showToast("Failed to load categories: " + e.getMessage()));
     }
-
 
 
 
@@ -451,8 +526,22 @@ public class BudgetActivity extends AppCompatActivity {
                 Map<String, Object> categoriesMap = (Map<String, Object>) documentSnapshot.get("categories");
 
                 if (categoriesMap != null) {
-                    categoriesMap.remove(oldName); // remove old
-                    categoriesMap.put(newName, amount); // add new/updated
+                    // Preserve existing spent amount if it exists
+                    Map<String, Object> oldData = (Map<String, Object>) categoriesMap.get(oldName);
+                    int spent = 0;
+                    if (oldData != null && oldData.get("spent") instanceof Number) {
+                        spent = ((Number) oldData.get("spent")).intValue();
+                    }
+
+                    // Remove old entry
+                    categoriesMap.remove(oldName);
+
+                    // Add updated entry
+                    Map<String, Object> newCategoryData = new HashMap<>();
+                    newCategoryData.put("budget", amount);
+                    newCategoryData.put("spent", spent);
+
+                    categoriesMap.put(newName, newCategoryData);
 
                     budgetRef.update("categories", categoriesMap)
                             .addOnSuccessListener(aVoid -> {
@@ -464,6 +553,7 @@ public class BudgetActivity extends AppCompatActivity {
             }
         });
     }
+
 
     private void deleteCategoryFromFirestore(String name) {
         DocumentReference budgetRef = getBudgetDocumentReference();
@@ -564,8 +654,12 @@ public class BudgetActivity extends AppCompatActivity {
                         historyData.put("archivedAt", new Timestamp(new Date()));
 
                         // Save to history collection
-                        db.collection("users").document(userId)
+                        db.collection("users")
+                                .document(userId)
+                                .collection("budget")
+                                .document("monthly")
                                 .collection("budget_history")
+
                                 .document(monthKey)
                                 .set(historyData)
                                 .addOnSuccessListener(aVoid -> {
@@ -582,5 +676,136 @@ public class BudgetActivity extends AppCompatActivity {
             Log.e("BudgetActivity", "Error parsing month key", e);
         }
     }
-    // but apply similar improvements to them
+
+    private void autoCopyCategoriesFromLastMonth(String lastMonthKey, String currentMonthKey) {
+        DocumentReference lastMonthRef = db.collection("users")
+                .document(userId)
+                .collection("budget")
+                .document(lastMonthKey);
+
+        DocumentReference currentMonthRef = db.collection("users")
+                .document(userId)
+                .collection("budget")
+                .document("monthly");
+
+        lastMonthRef.get()
+                .addOnSuccessListener(snapshot -> {
+                    if (snapshot.exists() && snapshot.contains("categories")) {
+                        Object rawCategories = snapshot.get("categories");
+
+                        if (rawCategories instanceof Map) {
+                            Map<String, Object> lastMonthCategories = (Map<String, Object>) rawCategories;
+                            Map<String, Object> newMonthCategories = new HashMap<>();
+
+                            for (Map.Entry<String, Object> entry : lastMonthCategories.entrySet()) {
+                                if (entry.getValue() instanceof Map) {
+                                    Map<String, Object> oldCategory = (Map<String, Object>) entry.getValue();
+
+                                    Map<String, Object> newCategory = new HashMap<>();
+                                    newCategory.put("budget", oldCategory.get("budget"));
+                                    newCategory.put("spent", 0);
+
+                                    newMonthCategories.put(entry.getKey(), newCategory);
+                                }
+                            }
+
+                            if (newMonthCategories.isEmpty()) {
+                                Log.w("Budget", "⚠ Copied 0 categories — source had no usable entries.");
+                            }
+
+                            currentMonthRef.update("categories", newMonthCategories)
+                                    .addOnSuccessListener(aVoid ->
+                                            Log.d("Budget", "✅ Copied " + newMonthCategories.size() + " categories from " + lastMonthKey))
+                                    .addOnFailureListener(e ->
+                                            Log.e("Budget", "❌ Failed to update categories", e));
+                        } else {
+                            Log.e("Budget", "❌ 'categories' is not a map or is null in " + lastMonthKey);
+                        }
+                    } else {
+                        Log.w("Budget", "❌ No 'categories' field found in " + lastMonthKey);
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Log.e("Budget", "❌ Failed to read last month categories", e));
+    }
+
+
+
+
+    private void calculateSpendingPerCategoryForMonth(String monthKey) {
+        Date[] range = getMonthRange(monthKey);
+
+        db.collection("users").document(userId)
+                .collection("transactions")
+                .whereEqualTo("type", "Expense")
+                .whereGreaterThanOrEqualTo("date", new Timestamp(range[0]))
+                .whereLessThanOrEqualTo("date", new Timestamp(range[1]))
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    Map<String, Integer> categoryTotals = new HashMap<>();
+
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        String category = doc.getString("category");
+                        Long amount = doc.getLong("amount");
+
+                        if (category != null && amount != null) {
+                            int current = categoryTotals.getOrDefault(category, 0);
+                            categoryTotals.put(category, current + amount.intValue());
+                        }
+                    }
+
+                    // Now update Firestore
+                    DocumentReference categoryDoc = getBudgetDocumentReference();
+
+                    categoryDoc.get().addOnSuccessListener(doc -> {
+                        if (doc.exists()) {
+                            Map<String, Object> updated = new HashMap<>();
+
+                            Map<String, Object> original = (Map<String, Object>) doc.get("categories");
+                            if (original == null) return;
+
+                            for (Map.Entry<String, Object> entry : original.entrySet()) {
+                                Map<String, Object> catData = (Map<String, Object>) entry.getValue();
+                                int spent = categoryTotals.getOrDefault(entry.getKey(), 0);
+
+                                Map<String, Object> newCat = new HashMap<>();
+                                newCat.put("budget", catData.get("budget"));
+                                newCat.put("spent", spent);
+                                updated.put(entry.getKey(), newCat);
+                            }
+
+                            categoryDoc.update("categories", updated)
+                                    .addOnSuccessListener(aVoid -> loadCategories());
+
+                        }
+                    });
+                });
+    }
+
+    private Date[] getMonthRange(String monthKey) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM", Locale.getDefault());
+        try {
+            Date monthDate = format.parse(monthKey);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(monthDate);
+
+            calendar.set(Calendar.DAY_OF_MONTH, 1);
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
+            Date startOfMonth = calendar.getTime();
+
+            calendar.add(Calendar.MONTH, 1);
+            calendar.add(Calendar.MILLISECOND, -1);
+            Date endOfMonth = calendar.getTime();
+
+            return new Date[]{startOfMonth, endOfMonth};
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return new Date[]{new Date(), new Date()}; // fallback to current date
+        }
+    }
+
+
 }

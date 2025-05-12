@@ -19,6 +19,7 @@ public class BillReminderAdapter extends RecyclerView.Adapter<BillReminderAdapte
 
     private final List<BillReminder> billList;
     private OnBillDeleteClickListener deleteClickListener;
+    private OnBillEditClickListener editClickListener;
 
     // Constructor
     public BillReminderAdapter(List<BillReminder> bills) {
@@ -30,8 +31,16 @@ public class BillReminderAdapter extends RecyclerView.Adapter<BillReminderAdapte
         void onDelete(BillReminder bill, int position);
     }
 
+    public interface OnBillEditClickListener {
+        void onEdit(BillReminder bill, int position);
+    }
+
     public void setOnBillDeleteClickListener(OnBillDeleteClickListener listener) {
         this.deleteClickListener = listener;
+    }
+
+    public void setOnBillEditClickListener(OnBillEditClickListener listener) {
+        this.editClickListener = listener;
     }
 
     @NonNull
@@ -57,11 +66,24 @@ public class BillReminderAdapter extends RecyclerView.Adapter<BillReminderAdapte
                 .format(new Date(bill.getDueDateMillis()));
         holder.dateView.setText(dateFormatted);
 
+        // Format and set the scheduled time
+        String timeFormatted = new SimpleDateFormat("hh:mm a", Locale.getDefault())
+                .format(new Date(bill.getDueDateMillis()));
+        holder.scheduledTimeView.setText("Scheduled: " + timeFormatted);
+
         // Delete click
         holder.deleteBtn.setOnClickListener(v -> {
             int adapterPosition = holder.getAdapterPosition();
             if (deleteClickListener != null && adapterPosition != RecyclerView.NO_POSITION) {
                 deleteClickListener.onDelete(billList.get(adapterPosition), adapterPosition);
+            }
+        });
+
+        // Edit click
+        holder.editBtn.setOnClickListener(v -> {
+            int adapterPosition = holder.getAdapterPosition();
+            if (editClickListener != null && adapterPosition != RecyclerView.NO_POSITION) {
+                editClickListener.onEdit(billList.get(adapterPosition), adapterPosition);
             }
         });
     }
@@ -73,15 +95,17 @@ public class BillReminderAdapter extends RecyclerView.Adapter<BillReminderAdapte
 
     // Inner ViewHolder class
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView nameView, dateView, amountView;
-        ImageButton deleteBtn;
+        TextView nameView, dateView, amountView, scheduledTimeView;
+        ImageButton deleteBtn, editBtn;
 
         public ViewHolder(View itemView) {
             super(itemView);
             nameView = itemView.findViewById(R.id.tv_bill_name);
             dateView = itemView.findViewById(R.id.tv_bill_date);
-            amountView = itemView.findViewById(R.id.tv_bill_amount);  // ✅ Make sure this ID exists in item_bill.xml
+            amountView = itemView.findViewById(R.id.tv_bill_amount);
+            scheduledTimeView = itemView.findViewById(R.id.tv_scheduled_time);
             deleteBtn = itemView.findViewById(R.id.btn_delete_bill);
+            editBtn = itemView.findViewById(R.id.btn_edit_bill);
         }
     }
 }

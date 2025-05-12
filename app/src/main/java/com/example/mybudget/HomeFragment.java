@@ -76,8 +76,10 @@ public class HomeFragment extends Fragment {
     private androidx.swiperefreshlayout.widget.SwipeRefreshLayout swipeRefreshLayout;
     private TextView tvEmptyTransactions;
     private ProgressBar progressLoading;
+    private SavingGoalsAdapter savingGoalsAdapter;
 
-    private LinearLayout layoutSavingGoals;
+
+    private ConnectivityManager.NetworkCallback networkCallback;
 
     private RecyclerView recyclerViewSavingGoals;
 
@@ -87,40 +89,59 @@ public class HomeFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            Log.e("UncaughtException", "App Crashed", throwable);
+        });
+
         firestore = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
 
         setupNetworkMonitoring();
     }
 
-    private void setupNetworkMonitoring() {
-        ConnectivityManager connectivityManager = (ConnectivityManager)
-                requireContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        NetworkRequest.Builder builder = new NetworkRequest.Builder();
-        connectivityManager.registerNetworkCallback(builder.build(),
-                new ConnectivityManager.NetworkCallback() {
-                    @Override
-                    public void onAvailable(Network network) {
-                        // Network is available - sync any pending changes
-                        syncPendingTransactions();
-                        syncPendingSavingsGoals();
-                    }
-
-                    @Override
-                    public void onLost(Network network) {
-                        // Network lost - show offline indicator
-                        requireActivity().runOnUiThread(() ->
-                                Toast.makeText(getContext(), "Offline mode - changes will sync when online",
-                                        Toast.LENGTH_SHORT).show());
-                    }
-                });
+    @Override
+    public void onStart() {
+        super.onStart();
+        setupNetworkMonitoring();
     }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        ConnectivityManager cm = (ConnectivityManager) requireContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (networkCallback != null && cm != null) {
+            cm.unregisterNetworkCallback(networkCallback);
+        }
+    }
+
+    private void setupNetworkMonitoring() {
+        ConnectivityManager cm = (ConnectivityManager) requireContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkRequest request = new NetworkRequest.Builder().build();
+        networkCallback = new ConnectivityManager.NetworkCallback() {
+            @Override
+            public void onAvailable(Network network) {
+                syncPendingTransactions();
+                syncPendingSavingsGoals();
+            }
+
+            @Override
+            public void onLost(Network network) {
+                if (isAdded() && getContext() != null)
+                    requireActivity().runOnUiThread(() ->
+                            Toast.makeText(getContext(), "Offline mode - changes will sync when online", Toast.LENGTH_SHORT).show());
+            }
+        };
+        cm.registerNetworkCallback(request, networkCallback);
+    }
+
+
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        firestore = FirebaseFirestore.getInstance();
-        auth = FirebaseAuth.getInstance();
+
+
+
         currencySymbol = getUserCurrencySymbol();
 
         rvTransactions = view.findViewById(R.id.rv_transactions);
@@ -129,64 +150,126 @@ public class HomeFragment extends Fragment {
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh);
         tvEmptyTransactions = view.findViewById(R.id.tv_empty_transactions);
         progressLoading = view.findViewById(R.id.progress_loading);
-        layoutSavingGoals = view.findViewById(R.id.layout_saving_goals);
-
-
-
-        // RecyclerView setup
-        rvTransactions.setLayoutManager(new LinearLayoutManager(getContext()));
-        transactionsAdapter = new TransactionsAdapter(transactionsList);
-        rvTransactions.setAdapter(transactionsAdapter);
+        recyclerViewSavingGoals = view.findViewById(R.id.rv_saving_goals);
         tvCurrentBalance = view.findViewById(R.id.tv_current_balance);
         tvViewAll = view.findViewById(R.id.tv_view_all);
 
+        // Setup Saving Goals RecyclerView
+        recyclerViewSavingGoals.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        List<GoalItem> goalItems = new ArrayList<>();
+        savingGoalsAdapter = new SavingGoalsAdapter(goalItems, new SavingGoalsAdapter.OnGoalActionListener() {
 
-        // Load transactions for the specific user
-        loadUserTransactions();
-        loadSavingGoals();
-        layoutSavingGoals.removeAllViews();
+            @Override
+            public void onDelete(String goalId) {
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                if (user == null) return;
+
+                firestore.collection("users")
+                        .document(user.getUid())
+                        .collection("savings")
+                        .document(goalId)
+                        .delete()
+                        .addOnSuccessListener(aVoid -> {
+                            Toast.makeText(getContext(), "Goal deleted", Toast.LENGTH_SHORT).show();
+                            loadSavingGoals(savingGoalsAdapter); // Refresh the list
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(getContext(), "Failed to delete goal", Toast.LENGTH_SHORT).show();
+                        });
+            }
+
+            @Override
+            public void onUpdate(GoalItem goalItem, int newSavedAmount) {
+                FirebaseUser user = auth.getCurrentUser();
+                if (user == null) return;
+
+                Log.d("DEBUG", "Updating goal: ID=" + goalItem.getId());
+
+                Map<String, Object> updateMap = new HashMap<>();
+                updateMap.put("saved", newSavedAmount);
+
+                firestore.collection("users")
+                        .document(user.getUid())
+                        .collection("savings")
+                        .document(goalItem.getId())
+                        .update(updateMap)
+                        .addOnSuccessListener(aVoid -> {
+                            Log.d("DEBUG", "Goal updated successfully");
+                            Toast.makeText(getContext(), "Goal updated", Toast.LENGTH_SHORT).show();
+                            loadSavingGoals(savingGoalsAdapter);
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("DEBUG", "Failed to update goal", e);
+                            Toast.makeText(getContext(), "Failed to update goal", Toast.LENGTH_SHORT).show();
+                        });
+            }
 
 
-        swipeRefreshLayout.setOnRefreshListener(() -> {
-            loadUserTransactions(); // Refresh transactions
+
         });
+        recyclerViewSavingGoals.setAdapter(savingGoalsAdapter);
 
+        // Load Saving Goals from Firestore
+        FirebaseUser user = auth.getCurrentUser();
+        if (user != null) {
+            firestore.collection("users")
+                    .document(user.getUid())
+                    .collection("savings")
+                    .get()
+                    .addOnSuccessListener(queryDocumentSnapshots -> {
+                        List<GoalItem> fetchedGoals = new ArrayList<>();
+                        for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                            String id = doc.getId();
+                            String name = doc.getString("name");
+                            Double target = doc.getDouble("target");
+                            Double saved = doc.getDouble("saved");
 
-        // Add transaction button
+                            if (name != null && target != null && saved != null) {
+                                GoalItem goal = new GoalItem(id, name, saved, target);  // ✅ use full constructor
+                                fetchedGoals.add(goal);
+                            }
+                        }
+                        savingGoalsAdapter.setGoalList(fetchedGoals); // refresh adapter
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(getContext(), "Failed to load saving goals", Toast.LENGTH_SHORT).show();
+                        Log.e("HomeFragment", "Error loading savings", e);
+                    });
+        }
+
+        // Setup Transactions RecyclerView
+        rvTransactions.setLayoutManager(new LinearLayoutManager(getContext()));
+        transactionsAdapter = new TransactionsAdapter(transactionsList);
+        rvTransactions.setAdapter(transactionsAdapter);
+
+        // Load user transactions
+        loadUserTransactions();
+
+        swipeRefreshLayout.setOnRefreshListener(this::loadUserTransactions);
+
+        // FAB to add transaction
         view.findViewById(R.id.fab_add_transaction).setOnClickListener(v -> showAddTransactionDialog());
 
-        // Add swipe-to-delete functionality
+        // Swipe to delete
         ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                return false; // No drag-and-drop functionality
+                return false;
             }
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                if (direction == ItemTouchHelper.LEFT) {
-                    // Get the position of the swiped item
-                    int position = viewHolder.getAdapterPosition();
+                int position = viewHolder.getAdapterPosition();
+                transactionsAdapter.notifyItemChanged(position); // reset swipe
 
-                    // Pause swipe by notifying the adapter
-                    transactionsAdapter.notifyItemChanged(position);
-
-                    // Display confirmation dialog
-                    new AlertDialog.Builder(getContext())
-                            .setTitle("Delete Transaction")
-                            .setMessage("Are you sure you want to delete this transaction?")
-                            .setPositiveButton("Yes", (dialog, which) -> {
-                                // Delete transaction from the database and list
-                                deleteTransactionFromFirestore(position);
-                            })
-                            .setNegativeButton("No", (dialog, which) -> {
-                                // Reset the swiped item
-                                dialog.dismiss();
-                                transactionsAdapter.notifyItemChanged(position);
-                            })
-                            .show();
-                }
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Delete Transaction")
+                        .setMessage("Are you sure you want to delete this transaction?")
+                        .setPositiveButton("Yes", (dialog, which) -> deleteTransactionFromFirestore(position))
+                        .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
+                        .show();
             }
+
             @Override
             public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
                                     float dX, float dY, int actionState, boolean isCurrentlyActive) {
@@ -194,7 +277,6 @@ public class HomeFragment extends Fragment {
                     Paint paint = new Paint();
                     paint.setColor(Color.RED);
 
-                    // Draw red background
                     RectF background = new RectF(
                             viewHolder.itemView.getRight() + dX,
                             viewHolder.itemView.getTop(),
@@ -203,11 +285,9 @@ public class HomeFragment extends Fragment {
                     );
                     c.drawRect(background, paint);
 
-                    // Draw delete icon
                     Drawable deleteIcon = ContextCompat.getDrawable(recyclerView.getContext(), R.drawable.ic_delete);
                     if (deleteIcon != null) {
-                        // Scale the delete icon to smaller dimensions (e.g., 24dp x 24dp)
-                        int iconSize = (int) (24 * recyclerView.getContext().getResources().getDisplayMetrics().density); // Convert dp to pixels
+                        int iconSize = (int) (24 * recyclerView.getContext().getResources().getDisplayMetrics().density);
                         int iconMargin = (viewHolder.itemView.getHeight() - iconSize) / 2;
                         int iconTop = viewHolder.itemView.getTop() + iconMargin;
                         int iconBottom = iconTop + iconSize;
@@ -220,14 +300,13 @@ public class HomeFragment extends Fragment {
                 }
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
             }
-
         };
         new ItemTouchHelper(simpleCallback).attachToRecyclerView(rvTransactions);
 
-
-
         return view;
     }
+
+
 
     private String getUserCurrencySymbol() {
         SharedPreferences prefs = requireActivity().getSharedPreferences("userPrefs", Context.MODE_PRIVATE);
@@ -248,27 +327,63 @@ public class HomeFragment extends Fragment {
         Map<String, ?> allDeleted = deletedPrefs.getAll();
 
         for (String txnId : allDeleted.keySet()) {
-            firestore.collection("users").document(user.getUid()).collection("transactions")
-                    .document(txnId)
+            final String transactionId = txnId; // ✅ make a final copy for the lambda
+
+            firestore.collection("users")
+                    .document(user.getUid())
+                    .collection("transactions")
+                    .document(transactionId)
                     .delete()
                     .addOnSuccessListener(aVoid -> {
-                        Log.d("OfflineSync", "Deleted synced: " + txnId);
-                        deletedPrefs.edit().remove(txnId).apply();
+                        Log.d("OfflineSync", "Deleted synced: " + transactionId);
+                        deletedPrefs.edit().remove(transactionId).apply();
                     })
-                    .addOnFailureListener(e -> Log.w("OfflineSync", "Failed to sync delete for " + txnId, e));
+                    .addOnFailureListener(e -> {
+                        Log.w("OfflineSync", "Failed to sync delete for " + transactionId, e);
+                    });
         }
 
-        loadUserTransactions(); // Refresh list after syncing
+        loadUserTransactions(); // ✅ Still fine to refresh afterwards
     }
 
+
+    private void loadSavingGoals(SavingGoalsAdapter adapter) {
+        FirebaseUser user = auth.getCurrentUser();
+        if (user != null) {
+            firestore.collection("users")
+                    .document(user.getUid())
+                    .collection("savings")
+                    .get()
+                    .addOnSuccessListener(queryDocumentSnapshots -> {
+                        List<GoalItem> fetchedGoals = new ArrayList<>();
+                        for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                            String id = doc.getId();
+                            String name = doc.getString("name");
+                            Double target = doc.getDouble("target");
+                            Double saved = doc.getDouble("saved");
+
+                            if (name != null && target != null && saved != null) {
+                                GoalItem goal = new GoalItem(id, name, saved, target);
+                                fetchedGoals.add(goal);
+                            }
+                        }
+                        adapter.setGoalList(fetchedGoals); // update adapter
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(getContext(), "Failed to load saving goals", Toast.LENGTH_SHORT).show();
+                        Log.e("HomeFragment", "Error loading savings", e);
+                    });
+        }
+    }
 
 
 
     private void syncPendingSavingsGoals() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null || !isNetworkAvailable()) return;
-        loadSavingGoals();
+        if (user == null || !isNetworkAvailable() || savingGoalsAdapter == null) return;
+        loadSavingGoals(savingGoalsAdapter);
     }
+
     private void loadUserTransactions() {
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser == null) {
@@ -318,6 +433,9 @@ public class HomeFragment extends Fragment {
         });
     }
     private void processTransactionData(QuerySnapshot queryDocumentSnapshots) {
+        if (!isAdded() || getActivity() == null) {
+            return;
+        }
         Set<String> seenIds = new HashSet<>();
         transactionsList.clear();
         double totalIncome = 0;
@@ -364,12 +482,18 @@ public class HomeFragment extends Fragment {
 
             // 🟢 View All Transactions button logic (restored)
             tvViewAll.setOnClickListener(v -> {
+                if (!isAdded() || getActivity() == null || getParentFragmentManager().isStateSaved()) {
+                    Log.w("HomeFragment", "Fragment not in safe state for transaction.");
+                    return;
+                }
+
                 FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
                 transaction.replace(R.id.fragment_container, TransactionsFragment.newInstance(new ArrayList<>(allTransactions)));
-
                 transaction.addToBackStack(null);
                 transaction.commit();
             });
+
+
 
             swipeRefreshLayout.setRefreshing(false);
             progressLoading.setVisibility(View.GONE);
@@ -399,51 +523,6 @@ public class HomeFragment extends Fragment {
 
 
 
-    private void loadSavingGoals() {
-
-        if (layoutSavingGoals == null || getContext() == null) return;
-
-        FirebaseUser user = auth.getCurrentUser();
-        if (user == null) return;
-
-        layoutSavingGoals.removeAllViews(); // Clear old views
-
-        firestore.collection("users")
-                .document(user.getUid())
-                .collection("savings")
-                .get()
-                .addOnSuccessListener(querySnapshots -> {
-                    LayoutInflater inflater = LayoutInflater.from(getContext());
-
-                    for (DocumentSnapshot doc : querySnapshots) {
-                        String name = doc.getString("name");
-                        Double target = doc.getDouble("target");
-                        Double saved = doc.getDouble("saved");
-
-                        if (name != null && target != null && saved != null && target > 0) {
-                            int progress = (int) ((saved / target) * 100);
-
-                            View itemView = inflater.inflate(R.layout.item_budget_progress, layoutSavingGoals, false);
-                            TextView tvName = itemView.findViewById(R.id.tv_category_name);
-                            TextView tvSummary = itemView.findViewById(R.id.tv_budget_summary);
-                            ProgressBar progressBar = itemView.findViewById(R.id.progress_budget);
-
-                            tvName.setText(name);
-                            tvSummary.setText(String.format("%.0f / %.0f %s", saved, target, currencySymbol));
-                            progressBar.setProgress(progress);
-
-                            layoutSavingGoals.addView(itemView);
-                        }
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Failed to load saving goals", Toast.LENGTH_SHORT).show();
-                    Log.e("HomeFragment", "Error loading savings", e);
-                });
-    }
-
-
-
     private void deleteTransactionFromFirestore(int position) {
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser == null) return;
@@ -457,11 +536,13 @@ public class HomeFragment extends Fragment {
                 .document(txn.getId())
                 .delete()
                 .addOnSuccessListener(aVoid -> {
+                    if (!isAdded() || getActivity() == null) return;
                     transactionsList.remove(position);
                     transactionsAdapter.notifyItemRemoved(position);
                     Toast.makeText(getContext(), "Transaction deleted", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
+                    if (!isAdded() || getActivity() == null) return;
                     if (!isNetworkAvailable()) {
                         SharedPreferences prefs = requireActivity().getSharedPreferences("OfflineDeleted", Context.MODE_PRIVATE);
                         prefs.edit().putBoolean(txn.getId(), true).apply();
@@ -482,6 +563,7 @@ public class HomeFragment extends Fragment {
         String userId = auth.getCurrentUser().getUid();
 
         if (userId == null) {
+            if (!isAdded() || getActivity() == null) return;
             Toast.makeText(getContext(), "User not authenticated", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -489,6 +571,7 @@ public class HomeFragment extends Fragment {
         firestore.collection("users").document(userId).collection("accounts")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!isAdded() || getActivity() == null) return;
                     paymentMethodsList.clear();
                     for (DocumentSnapshot document : queryDocumentSnapshots) {
                         paymentMethodsList.add(document.getString("accountName"));
@@ -616,40 +699,6 @@ public class HomeFragment extends Fragment {
         dialog.show();
     }
 
-    private void saveTransactionOnline(String userId, Map<String, Object> transactionData,
-                                       String type, String category, double amount, AlertDialog dialog) {
-        firestore.collection("users").document(userId).collection("transactions")
-                .add(transactionData)
-                .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(getContext(), "Transaction added", Toast.LENGTH_SHORT).show();
-                    dialog.dismiss();
-                    loadUserTransactions();
-
-                    if (type.equals("Expense")) {
-                        updateCategorySpent(userId, category, amount);
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    // If online save fails, try offline
-                    saveTransactionOffline(userId, transactionData, dialog);
-                });
-    }
-
-    private void saveTransactionOffline(String userId, Map<String, Object> transactionData, AlertDialog dialog) {
-        // Simple version: save to SharedPreferences
-        SharedPreferences prefs = requireActivity().getSharedPreferences("OfflineTransactions", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-
-        String transactionId = "txn_" + System.currentTimeMillis(); // generate temporary ID
-        String serializedData = transactionData.toString(); // You can improve by using JSON libraries
-
-        editor.putString(transactionId, serializedData);
-        editor.apply();
-
-        Toast.makeText(getContext(), "Saved offline. Will sync when online.", Toast.LENGTH_SHORT).show();
-        dialog.dismiss();
-    }
-
 
     private void updateCategorySpent(String userId, String category, double amount) {
         firestore.collection("users")
@@ -658,6 +707,7 @@ public class HomeFragment extends Fragment {
                 .document("monthly")
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
+                    if (!isAdded() || getActivity() == null) return;
                     if (documentSnapshot.exists()) {
                         Map<String, Object> categoriesMap = (Map<String, Object>) documentSnapshot.get("categories");
                         if (categoriesMap == null) categoriesMap = new HashMap<>();
@@ -684,10 +734,14 @@ public class HomeFragment extends Fragment {
                                 .collection("budget")
                                 .document("monthly")
                                 .update("categories", categoriesMap)
-                                .addOnSuccessListener(aVoid ->
-                                        Log.d("HomeFragment", "Updated category spent: " + category))
-                                .addOnFailureListener(e ->
-                                        Log.e("HomeFragment", "Failed to update category spent", e));
+                                .addOnSuccessListener(aVoid -> {
+                                    if (!isAdded() || getActivity() == null) return;
+                                    Log.d("HomeFragment", "Updated category spent: " + category);
+                                })
+                                .addOnFailureListener(e -> {
+                                    if (!isAdded() || getActivity() == null) return;
+                                    Log.e("HomeFragment", "Failed to update category spent", e);
+                                });
                     }
                 });
     }
@@ -696,6 +750,7 @@ public class HomeFragment extends Fragment {
     private void loadCategories(Spinner spinnerCategory, boolean isIncome) {
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser == null) {
+            if (!isAdded() || getActivity() == null) return;
             Toast.makeText(getContext(), "User not logged in", Toast.LENGTH_SHORT).show();
             return;
         }

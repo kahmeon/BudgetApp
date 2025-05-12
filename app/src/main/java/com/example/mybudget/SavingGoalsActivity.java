@@ -117,9 +117,11 @@ public class SavingGoalsActivity extends AppCompatActivity {
                         Long saved = doc.getLong("saved");
 
                         if (name != null && target != null && saved != null) {
-                            goalList.add(new GoalItem(id, name, target.intValue(), saved.intValue()));
+                            goalList.add(new GoalItem(id, name, saved.intValue(), target.intValue())); // 🔁 swapped here
                         }
                     }
+
+
                     adapter.notifyDataSetChanged();
                 });
     }

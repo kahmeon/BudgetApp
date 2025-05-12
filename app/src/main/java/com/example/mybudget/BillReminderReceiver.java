@@ -45,7 +45,7 @@ public class BillReminderReceiver extends BroadcastReceiver {
 
         // 2. Show the notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_notifications)
+                .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle("Bill Reminder")
                 .setContentText("Your bill \"" + billName + "\" is due today.")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)

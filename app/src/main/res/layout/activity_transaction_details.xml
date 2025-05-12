@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <!-- Details CardView -->
     <androidx.cardview.widget.CardView
         android:id="@+id/details_card"
         android:layout_width="match_parent"
@@ -14,135 +13,105 @@
         app:cardElevation="6dp"
         app:cardBackgroundColor="@android:color/white">
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- User's Input Image -->
+            <!-- Action Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="end">
+
+                <ImageView
+                    android:id="@+id/iv_close_details"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="8dp"
+                    android:src="@drawable/ic_close"
+                    android:contentDescription="Close"
+                    android:clickable="true" />
+
+                <ImageView
+                    android:id="@+id/iv_edit_transaction"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="8dp"
+                    android:src="@drawable/ic_edit"
+                    android:contentDescription="Edit"
+
+                    android:clickable="true" />
+
+                <ImageView
+                    android:id="@+id/iv_delete_transaction"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_delete"
+                    android:contentDescription="Delete"
+                    app:tint="@color/red"
+                    android:clickable="true" />
+            </LinearLayout>
+
+            <!-- Optional User Image -->
             <ImageView
                 android:id="@+id/iv_user_image"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
-                android:layout_alignParentTop="true"
+                android:layout_marginTop="12dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_placeholder_image"
-                android:contentDescription="User Input Image"
-                android:visibility="gone" />
+                android:visibility="gone"
+                android:contentDescription="User Input Image" />
 
-            <!-- Close Icon -->
-            <ImageView
-                android:id="@+id/iv_close_details"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_alignParentStart="true"
-                android:layout_below="@+id/iv_user_image"
-                android:layout_marginTop="8dp"
-                android:layout_marginStart="8dp"
-                android:src="@drawable/ic_close"
-                android:contentDescription="Close Icon"
-                android:clickable="true" />
-
-            <!-- Edit Icon -->
-            <ImageView
-                android:id="@+id/iv_edit_transaction"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_alignParentEnd="true"
-                android:layout_below="@+id/iv_user_image"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="48dp"
-                android:src="@drawable/ic_edit"
-                android:contentDescription="Edit Transaction"
-                android:clickable="true" />
-
-            <!-- Delete Icon -->
-            <ImageView
-                android:id="@+id/iv_delete_transaction"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_alignParentEnd="true"
-                android:layout_below="@+id/iv_user_image"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
-                android:src="@drawable/ic_delete"
-                android:contentDescription="Delete Transaction"
-                android:clickable="true" />
-
-            <!-- Details Section -->
+            <!-- Details -->
             <LinearLayout
                 android:id="@+id/transaction_details_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_below="@id/iv_close_details"
-                android:paddingTop="16dp">
+                android:layout_marginTop="16dp"
+                android:spacing="8dp">
 
-                <!-- Category -->
                 <TextView
                     android:id="@+id/tv_detail_category"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Category: "
-                    android:textSize="18sp"
-                    android:textColor="#000" />
+                    style="@style/DetailTextStyle"
+                    android:text="Category: " />
 
-                <!-- Type -->
                 <TextView
                     android:id="@+id/tv_detail_type"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Type: "
-                    android:textSize="18sp"
-                    android:textColor="#000" />
+                    style="@style/DetailTextStyle"
+                    android:text="Type: " />
 
-                <!-- Amount -->
                 <TextView
                     android:id="@+id/tv_detail_amount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Amount: "
-                    android:textSize="18sp"
-                    android:textColor="#000" />
+                    style="@style/DetailTextStyle"
+                    android:text="Amount: " />
 
-                <!-- Date -->
                 <TextView
                     android:id="@+id/tv_detail_date"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Date: "
-                    android:textSize="18sp"
-                    android:textColor="#000" />
+                    style="@style/DetailTextStyle"
+                    android:text="Date: " />
 
-                <!-- Description -->
                 <TextView
                     android:id="@+id/tv_detail_description"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Description: "
-                    android:textSize="18sp"
-                    android:textColor="#000" />
+                    style="@style/DetailTextStyle"
+                    android:text="Description: " />
 
-                <!-- Payment Method -->
                 <TextView
                     android:id="@+id/tv_detail_payment_method"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Payment Method: "
-                    android:textSize="18sp"
-                    android:textColor="#000" />
+                    style="@style/DetailTextStyle"
+                    android:text="Payment Method: " />
 
-                <!-- Location -->
                 <TextView
                     android:id="@+id/tv_detail_location"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    style="@style/DetailTextStyle"
                     android:text="Location: "
-                    android:textSize="18sp"
-                    android:textColor="#000"
-                    android:layout_marginTop="16dp"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    android:layout_marginTop="8dp" />
             </LinearLayout>
-        </RelativeLayout>
+        </LinearLayout>
     </androidx.cardview.widget.CardView>
 </RelativeLayout>

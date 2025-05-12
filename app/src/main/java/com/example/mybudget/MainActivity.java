@@ -3,9 +3,13 @@ package com.example.mybudget;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.SystemClock;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -13,6 +17,9 @@ import com.google.firebase.auth.FirebaseUser;
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth auth;
+    private BottomNavigationView bottomNavigationView;
+    private Fragment currentFragment = null;
+    private long lastClickTime = 0; // ✅ Debounce tracking
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,50 +35,76 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setItemIconTintList(null); // Ensure icons retain original colors
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setItemIconTintList(null);
 
-        // Load the default fragment (HomeFragment)
-        loadFragment(new HomeFragment());
+        if (savedInstanceState == null && getIntent() != null && !getIntent().hasExtra("notification_type")) {
+            loadFragment(new HomeFragment()); // Default only if no intent
+        }
 
-        // Set listener for bottom navigation
+        handleNotificationIntent(getIntent());
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            // ✅ Debounce logic: Ignore if tapped too quickly
+            if (SystemClock.elapsedRealtime() - lastClickTime < 500) {
+                return false;
+            }
+            lastClickTime = SystemClock.elapsedRealtime();
+
             Fragment selectedFragment = null;
 
-            if (item.getItemId() == R.id.nav_dashboard) {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_dashboard && !(currentFragment instanceof HomeFragment)) {
                 selectedFragment = new HomeFragment();
-
-            } else if (item.getItemId() == R.id.nav_wallets) {
+            } else if (itemId == R.id.nav_wallets && !(currentFragment instanceof WalletFragment)) {
                 selectedFragment = new WalletFragment();
-            } else if (item.getItemId() == R.id.nav_reports) {
+            } else if (itemId == R.id.nav_reports && !(currentFragment instanceof ReportsFragment)) {
                 selectedFragment = new ReportsFragment();
-            } else if (item.getItemId() == R.id.nav_settings) {
+            } else if (itemId == R.id.nav_settings && !(currentFragment instanceof SettingsFragment)) {
                 selectedFragment = new SettingsFragment();
             }
 
             if (selectedFragment != null) {
                 loadFragment(selectedFragment);
+                return true;
             }
 
-            return true;
+            return false;
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        handleNotificationIntent(getIntent());
+    }
+
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleNotificationIntent(intent);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
-        // Double-check login status when activity starts
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser == null || !isUserLoggedIn()) {
             redirectToLogin();
         }
     }
 
-    private void loadFragment(Fragment fragment) {
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .commit();
+    private void loadFragment(@NonNull Fragment fragment) {
+        currentFragment = fragment;
+        new Handler().post(() -> {
+            try {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, fragment)
+                        .commitAllowingStateLoss(); // safer
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     private boolean isUserLoggedIn() {
@@ -85,5 +118,18 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
+    private void handleNotificationIntent(Intent intent) {
+        if (intent != null && intent.hasExtra("notification_type")) {
+            String type = intent.getStringExtra("notification_type");
+            getIntent().removeExtra("notification_type");
+
+            if ("view_transactions".equals(type)) {
+                loadFragment(TransactionsFragment.newInstance(null));
+            } else if ("view_bill".equals(type)) {
+                startActivity(new Intent(this, NotificationSettingsActivity.class));
+            }
+        }
+    }
+
 
 }

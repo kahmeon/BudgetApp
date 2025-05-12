@@ -1,35 +1,59 @@
 package com.example.mybudget;
 
-public class GoalItem {
-    private String id;
-    private String name;
-    private int targetAmount;
-    private int savedAmount;
 
-    public GoalItem(String id, String name, int targetAmount, int savedAmount) {
-        this.id = id;
-        this.name = name;
-        this.targetAmount = targetAmount;
-        this.savedAmount = savedAmount;
-    }
 
-    public String getId() {
-        return id;
-    }
+    // Required no-argument constructor for Firestore
+    public class GoalItem {
+        private String id;
+        private String name;
+        private double savedAmount;
+        private double targetAmount;
 
-    public String getName() {
-        return name;
-    }
+        // ✅ REQUIRED: No-argument constructor for Firestore
+        public GoalItem() {}
 
-    public int getTargetAmount() {
-        return targetAmount;
-    }
+        public GoalItem(String name, double savedAmount, double targetAmount) {
+            this.name = name;
+            this.savedAmount = savedAmount;
+            this.targetAmount = targetAmount;
+        }
 
-    public int getSavedAmount() {
-        return savedAmount;
-    }
+        public GoalItem(String id, String name, double savedAmount, double targetAmount) {
+            this.id = id;
+            this.name = name;
+            this.savedAmount = savedAmount;
+            this.targetAmount = targetAmount;
+        }
+        // Getters and setters
+        public String getId() {
+            return id;
+        }
 
-    public void setSavedAmount(int savedAmount) {
-        this.savedAmount = savedAmount;
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public double getSavedAmount() {
+            return savedAmount;
+        }
+
+        public double getTargetAmount() {
+            return targetAmount;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setSavedAmount(double savedAmount) {
+            this.savedAmount = savedAmount;
+        }
+
+        public void setTargetAmount(double targetAmount) {
+            this.targetAmount = targetAmount;
+        }
     }
-}

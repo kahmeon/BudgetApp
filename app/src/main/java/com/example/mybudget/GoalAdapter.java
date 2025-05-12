@@ -38,14 +38,22 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder
     public void onBindViewHolder(@NonNull GoalViewHolder holder, int position) {
         GoalItem goal = goals.get(position);
         holder.goalName.setText(goal.getName());
-        holder.goalAmount.setText("Target: RM " + goal.getTargetAmount());
-        holder.savedAmount.setText("Saved: RM " + goal.getSavedAmount());
+        holder.goalAmount.setText(String.format("Target: RM %.2f", goal.getTargetAmount()));
+        holder.savedAmount.setText(String.format("Saved: RM %.2f", goal.getSavedAmount()));
 
-        int percent = (int) ((goal.getSavedAmount() * 100.0f) / goal.getTargetAmount());
-        holder.goalProgress.setProgress(percent);
+        int percent = 0;
+        if (goal.getTargetAmount() > 0) {
+            percent = (int) ((goal.getSavedAmount() * 100.0f) / goal.getTargetAmount());
+        }
+        holder.goalProgress.setProgress(Math.min(100, percent));
         holder.goalProgressText.setText(percent + "%");
 
-        holder.updateButton.setOnClickListener(v -> listener.onUpdate(goal, goal.getSavedAmount() + 100));
+        // ✅ Only trigger update when the button is clicked
+        holder.updateButton.setOnClickListener(v -> {
+            int newAmount = (int) (goal.getSavedAmount() + 100);
+            listener.onUpdate(goal, newAmount);
+        });
+
         holder.deleteButton.setOnClickListener(v -> listener.onDelete(goal.getId()));
     }
 

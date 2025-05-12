@@ -1,25 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="16dp"
-    android:layout_marginVertical="8dp"
-    app:cardCornerRadius="12dp"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="8dp"
     app:strokeColor="@color/white"
     app:strokeWidth="1dp"
-    app:cardElevation="2dp"
+    app:cardElevation="1dp"
     app:rippleColor="@color/primaryContainer">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="12dp">
 
-        <!-- Goal Title with icon -->
+        <!-- Goal Title -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -27,11 +26,11 @@
             android:gravity="center_vertical">
 
             <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:src="@drawable/ic_goal"
                 app:tint="@color/primary"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="6dp"
                 tools:ignore="ContentDescription" />
 
             <TextView
@@ -39,11 +38,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Buy a Laptop"
-                android:textSize="18sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
                 android:textColor="@color/onSurface"
-                android:ellipsize="end"
-                android:maxLines="1" />
+                android:maxLines="1"
+                android:ellipsize="end" />
         </LinearLayout>
 
         <!-- Progress Indicator -->
@@ -51,27 +50,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginTop="12dp">
+            android:layout_marginTop="8dp">
 
-            <!-- Progress Text -->
             <TextView
                 android:id="@+id/goal_progress_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="50% achieved"
-                android:textSize="14sp"
+                android:textSize="12sp"
                 android:textColor="@color/black"
                 android:textAlignment="textEnd"
-                android:layout_marginBottom="4dp"/>
+                android:layout_marginBottom="2dp"/>
 
-            <!-- Progress Bar -->
             <com.google.android.material.progressindicator.LinearProgressIndicator
                 android:id="@+id/goal_progress_bar"
                 android:layout_width="match_parent"
-                android:layout_height="8dp"
-                android:layout_marginBottom="8dp"
-                app:trackCornerRadius="4dp"
-                app:trackThickness="8dp"
+                android:layout_height="6dp"
+                app:trackCornerRadius="3dp"
+                app:trackThickness="6dp"
                 app:indicatorColor="@color/buttonPrimary"
                 app:trackColor="@color/surfaceVariant"
                 android:progress="50" />
@@ -82,86 +78,78 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:columnCount="2"
-            android:rowCount="2"
-            android:alignmentMode="alignMargins"
-            android:columnOrderPreserved="false"
-            android:layout_marginTop="8dp">
+            android:layout_marginTop="6dp">
 
-            <!-- Target Label -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Target:"
-                android:textSize="14sp"
-                android:textColor="@color/black"
-                android:layout_columnWeight="1"/>
+                android:textSize="13sp"
+                android:textColor="@color/black" />
 
-            <!-- Target Value -->
             <TextView
                 android:id="@+id/goal_target"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="RM 3,000"
-                android:textSize="14sp"
-                android:textColor="@color/black"
+                android:textSize="13sp"
                 android:textStyle="bold"
-                android:layout_columnWeight="1"
+                android:textColor="@color/black"
                 android:layout_gravity="end"/>
 
-            <!-- Saved Label -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Saved:"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:textColor="@color/black"
-                android:layout_marginTop="4dp"
-                android:layout_columnWeight="1"/>
+                android:layout_marginTop="2dp" />
 
-            <!-- Saved Value -->
             <TextView
                 android:id="@+id/goal_saved"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="RM 1,500"
-                android:textSize="14sp"
-                android:textColor="@color/black"
+                android:textSize="13sp"
                 android:textStyle="bold"
-                android:layout_marginTop="4dp"
-                android:layout_columnWeight="1"
+                android:textColor="@color/black"
+                android:layout_marginTop="2dp"
                 android:layout_gravity="end"/>
         </GridLayout>
 
-        <!-- Action Buttons -->
+        <!-- Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="end"
-            android:layout_marginTop="16dp">
+            android:layout_marginTop="10dp">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_update_goal"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="wrap_content"
-                android:layout_height="36dp"
+                android:layout_height="32dp"
                 android:text="Update"
+                android:textSize="12sp"
                 android:textColor="@color/black"
                 app:strokeColor="@color/black"
                 app:strokeWidth="1dp"
-                app:cornerRadius="8dp"
-                android:layout_marginEnd="8dp"/>
+                app:cornerRadius="6dp"
+                android:layout_marginEnd="6dp"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_delete_goal"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="wrap_content"
-                android:layout_height="36dp"
+                android:layout_height="32dp"
                 android:text="Delete"
+                android:textSize="12sp"
                 android:textColor="@color/error"
                 app:strokeColor="@color/black"
                 app:strokeWidth="1dp"
-                app:cornerRadius="8dp"/>
+                app:cornerRadius="6dp"/>
         </LinearLayout>
+
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
