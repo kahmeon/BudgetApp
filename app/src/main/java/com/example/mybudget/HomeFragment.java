@@ -310,13 +310,13 @@ public class HomeFragment extends Fragment {
 
     private String getUserCurrencySymbol() {
         SharedPreferences prefs = requireActivity().getSharedPreferences("userPrefs", Context.MODE_PRIVATE);
-        String currency = prefs.getString("currency", "USD"); // Default to USD if not set
+        String currency = prefs.getString("currency", "MYR"); // Default to USD if not set
 
         switch (currency) {
             case "MYR": return "RM";
             case "USD": return "$";
             case "EUR": return "€";
-            default: return "$"; // Default fallback
+            default: return "RM"; // Default fallback
         }
     }
     private void syncPendingTransactions() {

@@ -262,11 +262,43 @@ public class EditTransactionDialog extends DialogFragment {
 
 
     private void setCategoryOptions(Spinner spinner, boolean isIncome) {
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item,
-                isIncome ? Arrays.asList("Salary", "Business", "Investment") : Arrays.asList("Food", "Transport", "Utilities"));
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        firestore.collection("users")
+                .document(userId)
+                .collection("categories")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<String> categoryList = new ArrayList<>();
+                    for (DocumentSnapshot document : queryDocumentSnapshots) {
+                        String name = document.getString("name");
+                        String type = document.getString("type");
+                        if (name != null && type != null && type.equals(isIncome ? "Income" : "Expense")) {
+                            categoryList.add(name);
+                        }
+                    }
+
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
+                            android.R.layout.simple_spinner_item, categoryList);
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spinner.setAdapter(adapter);
+
+                    // Pre-select the existing category
+                    if (category != null) {
+                        int index = categoryList.indexOf(category);
+                        if (index >= 0) {
+                            spinner.setSelection(index);
+                        }
+                    }
+
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Failed to load categories", Toast.LENGTH_SHORT).show();
+                    Log.e("Firestore Error", "Error loading categories", e);
+                });
     }
+
 
 
 }
